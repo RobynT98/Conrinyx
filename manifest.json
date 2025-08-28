@@ -1,30 +1,41 @@
 {
-  "id": "/Conrinyx/",
+  "id": "/",
   "name": "ConriNyx Scenarios",
   "short_name": "ConriNyx",
-  "description": "ConriNyx – scenarios och rollspel, offline och online.",
-  "start_url": "/Conrinyx/index.html",
-  "scope": "/Conrinyx/",
+  "description": "Where shadows meet the everyday — found family, trauma & healing.",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "fullscreen", "window-controls-overlay"],
+  "display_override": ["standalone", "minimal-ui", "fullscreen"],
   "background_color": "#0b0b12",
   "theme_color": "#d4a72c",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "icons": [
-    { "src": "/Conrinyx/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/Conrinyx/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ],
   "screenshots": [
-  {
-    "src": "/Conrinyx/screenshot1.png",
-    "sizes": "1080x1920",
-    "type": "image/png",
-    "label": "Startskärm"
+    {
+      "src": "screenshot1.png",
+      "sizes": "768x1495",
+      "type": "image/png"
+    },
+    {
+      "src": "screenshot2.png",
+      "sizes": "730x1536",
+      "type": "image/png"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
   },
-  {
-    "src": "/Conrinyx/screenshot2.png",
-    "sizes": "1080x1920",
-    "type": "image/png",
-    "label": "Scenario-exempel"
-  }
-  ]
+  "prefer_related_applications": false
+}
