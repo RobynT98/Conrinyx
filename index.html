@@ -4,7 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="/Conrinyx/manifest.json">
+<meta name="theme-color" content="#d4a72c">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/Conrinyx/sw.js")
+        .then(reg => console.log("SW ok:", reg.scope))
+        .catch(err => console.error("SW fel:", err));
+    });
+  }
+</script>
   <meta name="theme-color" content="#d4a72c">
   <title>ConriNyx–FoundFamily — Scenarioindex</title>
 </head>
