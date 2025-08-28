@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="sv">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Karaktärer — ConriNyx</title>
+<link rel="manifest" href="../manifest.json">
+<style>
+  :root{--bg:#0b0b12;--card:#151922;--text:#e6eef7;--accent:#d4a72c;--muted:#9fb0c3}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui}
+  header{padding:16px 20px;border-bottom:1px solid #222}
+  h1{margin:0;font-size:22px}
+  .wrap{max-width:1000px;margin:0 auto;padding:20px}
+  .tools{display:flex;gap:12px;margin:8px 0 16px}
+  input[type=search]{flex:1;background:#0f1320;color:var(--text);border:1px solid #222;border-radius:10px;padding:10px 12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .card{background:var(--card);border-radius:14px;overflow:hidden;border:1px solid #222}
+  .thumb{aspect-ratio:16/9;background:#0f1320;display:grid;place-items:center}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .pad{padding:12px}
+  .title{font-weight:700;margin:0 0 2px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 8px}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .tag{font-size:12px;background:#0f1320;border:1px solid #222;border-radius:999px;padding:4px 8px;color:var(--muted)}
+  .btn{display:inline-block;background:var(--accent);color:#000;padding:8px 12px;border-radius:10px;text-decoration:none;font-weight:600}
+  a{color:var(--accent)}
+</style>
+<header><h1>Karaktärer</h1></header>
+<div class="wrap">
+  <div class="tools">
+    <input id="q" type="search" placeholder="Sök karaktär eller tagg …">
+  </div>
+  <div id="list" class="grid" role="list"></div>
+</div>
+
+<script>
+const BASE = '..'; // relativt till /Conrinx/characters/
+const JSON_URL = BASE + '/data/characters.json';
+const toUrl = id => './show.html?id=' + encodeURIComponent(id);
+
+let data = [];
+const list = document.getElementById('list');
+const q = document.getElementById('q');
+
+fetch(JSON_URL).then(r=>r.json()).then(arr=>{
+  data = arr; render();
+});
+
+q.addEventListener('input', render);
+
+function render(){
+  const term = (q.value||'').toLowerCase().trim();
+  const items = term
+    ? data.filter(x =>
+        x.name.toLowerCase().includes(term) ||
+        x.title.toLowerCase().includes(term) ||
+        (x.tags||[]).some(t=>t.toLowerCase().includes(term)))
+    : data;
+
+  list.innerHTML = items.map(x => card(x)).join('') || `<p>Inget matchade din sökning.</p>`;
+}
+
+function card(x){
+  const img = x.avatar ? `<img src="${BASE + x.avatar}" alt="">` : '';
+  const tags = (x.tags||[]).slice(0,4).map(t=>`<span class="tag">#${t}</span>`).join('');
+  return `
+  <article class="card" role="listitem">
+    <div class="thumb">${img}</div>
+    <div class="pad">
+      <p class="title">${escapeHTML(x.name)}</p>
+      <p class="sub">${escapeHTML(x.title||'')}</p>
+      <div class="tags">${tags}</div>
+      <a class="btn" href="${toUrl(x.id)}">Visa</a>
+    </div>
+  </article>`;
+}
+
+function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]))}
+</script>
+  </html>
