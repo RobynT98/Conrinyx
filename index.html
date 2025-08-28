@@ -1,16 +1,6 @@
 <!doctype html>
 <html lang="sv">
 <head>
-  <script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then(reg => console.log("✅ SW registrerad:", reg.scope))
-        .catch(err => console.error("❌ SW fel:", err));
-    });
-  }
-  </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -1700,17 +1690,14 @@ renderScenarios();
   updateOnlineStatus();
 </script>
 <script>
-(function () {
-  if (!("serviceWorker" in navigator)) return;
-  const isGH = location.hostname.endsWith("github.io");
-  const base = isGH ? "/Conrinyx/" : "/";
+if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register(base + "sw.js", { scope: base })
-      .then(reg => console.log("✅ SW:", reg.scope))
-      .catch(err => console.error("❌ SW error:", err));
+    navigator.serviceWorker
+      .register("/Conrinyx/sw.js")
+      .then(reg => console.log("✅ SW registrerad:", reg.scope))
+      .catch(err => console.error("❌ SW fel:", err));
   });
-})();
-</script>
+}
   </script>
 </body>
 </html>
