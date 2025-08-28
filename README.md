@@ -8,6 +8,9 @@ This project is built as a simple PWA with:
 - `sw.js` – service worker (offline caching, PWA support)  
 - Icons (`icon-192.png`, `icon-512.png`)  
 
+## Live Demo
+➡️ [Open the app here](https://robynT98.github.io/Conrinx)
+
 ## Features
 - Works as an installable app on Android (via Chrome).  
 - Can be packaged into an APK using [PWABuilder](https://www.pwabuilder.com/) or [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap).  
