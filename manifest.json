@@ -15,15 +15,16 @@
     { "src": "/Conrinyx/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ],
   "screenshots": [
-    {
-      "src": "/Conrinyx/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "label": "ConriNyx huvudskärm"
-    }
-  ],
-  "launch_handler": {
-    "client_mode": "navigate-existing"
+  {
+    "src": "/Conrinyx/screenshot1.png",
+    "sizes": "1080x1920",
+    "type": "image/png",
+    "label": "Startskärm"
   },
-  "prefer_related_applications": false
-}
+  {
+    "src": "/Conrinyx/screenshot2.png",
+    "sizes": "1080x1920",
+    "type": "image/png",
+    "label": "Scenario-exempel"
+  }
+  ]
