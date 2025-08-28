@@ -1,0 +1,38 @@
+[
+  {
+    "id": "conri",
+    "name": "Conri Blackthorn",
+    "title": "Ruler of Blackthorn Isle",
+    "avatar": "/Conrinyx/images/characters/conri.webp",
+    "tags": ["ruler", "island", "discipline"],
+    "summary": "Absolute ruler of Blackthorn Isle — law incarnate.",
+    "bio": [
+      "Conri enforces the island's harsh laws to keep chaos at bay.",
+      "He carries a private burden: order must hold, even when mercy calls."
+    ],
+    "links": [
+      { "label": "Till scenariot", "href": "/Conrinyx/#blackthorn-isle" }
+    ],
+    "gallery": [
+      "/Conrinyx/images/characters/conri.webp"
+    ]
+  },
+  {
+    "id": "nyx",
+    "name": "Nyx Rivers",
+    "title": "Guardian of Riverside",
+    "avatar": "/Conrinyx/images/characters/nyx.webp",
+    "tags": ["found family", "protector", "urban"],
+    "summary": "A stubborn protector holding a fragile home together.",
+    "bio": [
+      "Nyx keeps the door open and the rules clear.",
+      "Healing is slow; trust is earned."
+    ],
+    "links": [
+      { "label": "Till scenariot", "href": "/Conrinyx/#riverside" }
+    ],
+    "gallery": [
+      "/Conrinyx/images/characters/nyx.webp"
+    ]
+  }
+]
