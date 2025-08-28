@@ -1,0 +1,1701 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#d4a72c">
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js")
+        .then(reg => console.log("✅ Service Worker registrerad:", reg.scope))
+        .catch(err => console.error("❌ SW-fel:", err));
+    }
+  </script>
+
+  <title>ConriNyx–FoundFamily — Scenarioindex</title>
+</head>
+<style>
+:root{
+  --bg:#0f1115; --panel:#151922; --muted:#8ea0b3; --text:#e6eef7;
+  --accent:#bfa76b;       /* dämpad guld */
+  --accent-2:#a16207;     /* rostad orange */
+  --chip:#1f2531; --ok:#88d498; --danger:#e26d6d;
+  --ring: rgba(255,180,75,.3);
+  --banner-h: 220px;
+}
+  *{box-sizing:border-box}
+  body{
+    margin:0; font:16px/1.5 system-ui,Segoe UI,Roboto,Arial;
+    color:var(--text); background:radial-gradient(1200px 700px at 0 -200px,#1a2030,transparent) , var(--bg);
+  }
+  .wrap{max-width:1100px; margin:auto; padding:32px 16px 80px}
+  h1{font-size:clamp(28px,4vw,42px); margin:0 0 8px}
+  p.lead{margin:0 0 24px; color:var(--muted)}
+  .controls{display:grid; gap:12px; grid-template-columns:1fr 220px 220px; margin:10px 0 18px}
+  input, select, button{
+    background:var(--panel); color:var(--text); border:1px solid #222a36; border-radius:10px;
+    padding:12px 14px; outline:0; transition:.15s;
+  }
+  input:focus, select:focus, button:focus{box-shadow:0 0 0 3px var(--ring); border-color:#2a3344}
+  .grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+  .card{background:#111723; border:1px solid #1b2534; border-radius:16px; overflow:hidden; display:flex; flex-direction:column}
+  .cover{position:relative; background:#0d1320; height:148px; display:grid; place-items:center}
+  .cover img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:.85}
+  .cover-title{position:relative; z-index:1; padding:6px 12px; border-radius:999px; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.15); backdrop-filter: blur(3px); font-weight:600}
+  .card-body{padding:14px 14px 0}
+  .title{margin:0 0 2px; font-size:18px}
+  .meta{color:var(--muted); font-size:13px; display:flex; gap:8px; align-items:center; margin-bottom:6px}
+  .badge{background:#1c2432; border:1px solid #263045; padding:2px 8px; border-radius:999px; font-size:12px}
+  .dot{opacity:.45}
+  .blurb{margin:8px 0 10px; color:#cbd6e3; min-height:54px}
+  .taglist{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px}
+  .tag{background:var(--chip); color:#c6d3e6; border:1px solid #253044; font-size:12px; padding:4px 8px; border-radius:999px}
+  .card-actions{display:flex; gap:8px; padding:0 14px 14px}
+  .btn{cursor:pointer; user-select:none}
+  .btn.primary{background:linear-gradient(180deg,#ffd79a,#ffb44b); color:#1b1301; border:none; font-weight:700}
+  .btn.outline{background:transparent}
+  .btn:hover{transform:translateY(-1px)}
+  .filters-row{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 0}
+  .chip.active{outline:2px solid var(--accent); outline-offset:2px}
+  footer{margin-top:26px; color:var(--muted); font-size:12px; text-align:center}
+  .empty{opacity:.7; text-align:center; padding:40px 10px}
+  @media (max-width:780px){ .controls{grid-template-columns:1fr 1fr; } .controls > :last-child{grid-column:1 / -1}}
+.btn.play-link{
+  background: linear-gradient(180deg,#ffd79a,#ffb44b);
+  color:#1b1301;
+  border:1px solid #7a4e00;
+  font-weight:700;
+  border-radius:10px;
+  padding:10px 14px;
+}
+.btn.secondary{
+  background:transparent;
+  color:var(--text);
+  border:1px solid #263045;
+  border-radius:10px;
+  padding:10px 14px;
+}
+.btn.secondary:hover{ background:#1a2232; }
+.btn.play-link:hover{ transform:translateY(-1px); filter:saturate(1.05); }
+.btn.private {
+  background: transparent;
+  color: var(--accent);     /* guld */
+  font-weight: bold;
+  border: 1px solid var(--accent-2);  /* rostad orange */
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.9em;
+}
+/* ===== Banner + profil ===== */
+.profile-banner{
+  position:relative;
+  height:var(--banner-h);
+  border-radius:22px;
+  overflow:hidden;
+  margin:16px 0 26px;
+  background:#0b0f14;
+  box-shadow:0 10px 28px rgba(0,0,0,.35);
+}
+.profile-banner .banner-img{
+  position:absolute; inset:0;
+  width:100%; height:100%; object-fit:cover;
+  filter:saturate(1.1) brightness(.9);
+}
+.profile-banner::after{
+  /* mjuk nedtoning för textläsbarhet */
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(10,12,16,.1) 0%, rgba(10,12,16,.55) 55%, rgba(10,12,16,.95) 100%);
+}
+
+.profile-wrap{
+  position:absolute; inset:auto 0 14px 0;
+  display:flex; align-items:flex-end; gap:16px;
+  padding:0 18px;
+}
+
+.avatar{
+  width:92px; height:92px; border-radius:50%;
+  object-fit:cover; z-index:1;
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  /* ring/border med gradient */
+  padding:3px;
+  background:
+    radial-gradient(100% 100% at 0% 0%, var(--accent) 0%, var(--accent-2) 100%);
+}
+
+.profile-meta{ color:#e7ecf3; z-index:1; }
+.profile-name{
+  margin:0 0 2px; font-size:28px; line-height:1.15; letter-spacing:.2px;
+  text-shadow:0 2px 10px rgba(0,0,0,.5);
+}
+.profile-tagline{
+  margin:0; opacity:.9; font-size:14px;
+}
+.profile-badges{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+
+.chip{
+  font-size:12px; padding:6px 10px; border-radius:999px;
+  background:rgba(255,255,255,.08); color:#e8eef8;
+  border:1px solid rgba(255,255,255,.12);
+  backdrop-filter: blur(4px);
+}
+
+/* ===== Kort-border (accent) för scenariokort, valfritt ===== */
+.card{
+  position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  background:#0e1218;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
+}
+.card::before{
+  /* tunn gradientram runt kortet */
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:18px;
+  padding:1px; /* tjocklek på ramen */
+  background:linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-mask:
+     linear-gradient(#000 0 0) content-box, 
+     linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+          mask-composite: exclude;
+}
+.login-tip{display:flex; gap:10px; align-items:center; margin:8px 0 14px}
+.login-tip small{color:var(--muted)}
+@media (prefers-reduced-motion: reduce){
+  .btn:hover{ transform: none; }
+  .cover img{ transition: none; }
+}
+/* --- Actions layout --- */
+.actions-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin:14px 0 6px;
+}
+
+/* --- Bas för knappar --- */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 16px;
+  border-radius:12px;
+  font-weight:700;
+  text-decoration:none;
+  line-height:1;
+  border:1px solid transparent;
+  transition:transform .12s ease, filter .12s ease, box-shadow .12s ease;
+  box-shadow:0 6px 14px rgba(0,0,0,.18);
+}
+
+/* Primär (guld → orange) */
+.btn-solid{
+  background:linear-gradient(180deg, var(--accent), var(--accent-2));
+  color:#1b1301;
+  border-color:rgba(139,92,15,.6);
+}
+.btn-solid:hover{ transform:translateY(-1px); filter:saturate(1.05); }
+.btn-solid:active{ transform:translateY(0); filter:saturate(.98); }
+
+/* Sekundär (mörk glas) */
+.btn-ghost{
+  background:rgba(17,24,39,.35);           /* mörkt glas */
+  color:var(--text, #e6eef7);
+  border-color:rgba(148,163,184,.35);      /* subtil kant */
+  backdrop-filter:blur(4px);
+}
+.btn-ghost:hover{ background:rgba(17,24,39,.5); }
+.btn-ghost:active{ background:rgba(17,24,39,.6); }
+
+/* Små skärmar: låt knappar brytas fint */
+@media (max-width:480px){
+  .actions-row{ gap:10px; }
+  .btn{ flex:1 1 auto; }
+}
+@media (min-width:720px){
+  .actions-row{ justify-content:flex-end; }
+}
+.card{ transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }
+.card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(0,0,0,.45);
+  filter: saturate(1.02);
+}
+.cover img{ transition: transform .8s ease, opacity .25s ease; }
+.card:hover .cover img{ transform: scale(1.03); }
+.card::before{ transition: opacity .18s ease; opacity:.9; }
+.card:hover::before{ opacity:1; }
+.badge{
+  background: linear-gradient(180deg,#1c2432,#161d29);
+  border:1px solid #2a354a;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.tag{
+  transition: background .12s ease, transform .12s ease, border-color .12s ease;
+}
+.tag:hover{
+  background:#253044;
+  border-color:#32415b;
+  transform: translateY(-1px);
+}
+.btn{ box-shadow: 0 8px 18px rgba(0,0,0,.22); }
+.btn:focus{ outline:0; box-shadow:0 0 0 3px var(--ring), 0 8px 18px rgba(0,0,0,.22); }
+
+.btn-solid{
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  color:#1b1301;
+  border-color: rgba(139,92,15,.55);
+  text-shadow: 0 1px 0 rgba(255,255,255,.25);
+}
+.btn-solid:hover{ transform: translateY(-1px); filter: saturate(1.06) contrast(1.02); }
+.btn-solid:active{ transform: translateY(0); filter: saturate(.98); }
+
+.btn-ghost{
+  background: rgba(17,24,39,.38);
+  border-color: rgba(148,163,184,.35);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.22);
+}
+.btn-ghost:hover{ background: rgba(17,24,39,.52); }
+.actions-row{
+  position: sticky;
+  top: 10px;
+  z-index: 20;
+  padding: 10px;
+  margin: 14px -4px 6px;        /* lite extra luft */
+  background: linear-gradient(180deg, rgba(15,17,21,.75), rgba(15,17,21,.35));
+  border: 1px solid rgba(148,163,184,.18);
+  border-radius: 14px;
+  backdrop-filter: blur(6px);
+}
+.empty{
+  border:1px dashed #2a3344;
+  border-radius: 14px;
+  padding: 28px 14px;
+  background: rgba(20,24,32,.35);
+  backdrop-filter: blur(3px);
+}
+h1{ letter-spacing:.2px; text-shadow:0 2px 12px rgba(0,0,0,.35); }
+p.lead{ font-size:clamp(15px,2.3vw,18px); }
+@media (max-width:420px){
+  .grid{ gap:12px; }
+  .btn{ padding:10px 12px; border-radius:10px; }
+  .card-body{ padding:12px 12px 0; }
+  .card-actions{ padding:0 12px 12px; }
+}
+/* ------- Detaljer (expander) ------- */
+.details{ 
+  margin:12px 14px 14px; padding:12px; border-radius:12px;
+  background:rgba(20,24,32,.45); border:1px solid #2a354a; 
+  backdrop-filter: blur(4px); animation:fadeIn .22s ease;
+}
+.details.hidden{ display:none; }
+.details h4{ margin:0 0 8px; font-size:15px; color:var(--accent); }
+.details .grid{ display:grid; gap:10px; grid-template-columns:1fr; }
+.details section{ background:rgba(17,23,35,.45); border:1px solid #253044; border-radius:10px; padding:10px; }
+.details ul{ margin:6px 0 0; padding-left:18px; font-size:14px; line-height:1.4; }
+@media (min-width:700px){ .details .grid{ grid-template-columns:1fr 1fr; } }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(-2px)} to{opacity:1; transform:translateY(0)} }
+/* -------- Detaljer-kort v2 -------- */
+.details {
+  margin-top: 12px;
+}
+
+.details-card {
+  background: #0c0f14;            /* matchar din dark panel */
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  overflow: hidden;               /* så hörnen håller */
+}
+
+/* Header-raden med knapp */
+.details-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px dashed rgba(255,255,255,.06);
+}
+
+/* Knappen som togglar */
+.btn.details-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: rgba(191,167,107,.12);         /* dämpad guld */
+  color: #e6eef7;
+  border: 1px solid rgba(191,167,107,.35);
+  transition: transform .12s ease, background .2s ease, border-color .2s ease;
+}
+.btn.details-toggle:hover { transform: translateY(-1px); }
+.btn.details-toggle[aria-expanded="true"]{
+  background: rgba(191,167,107,.22);
+  border-color: rgba(191,167,107,.55);
+}
+
+/* “chevron”-ikon (via CSS) */
+.btn.details-toggle .chev {
+  width: 10px; height: 10px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform .2s ease;
+  margin-top: 1px;
+}
+.btn.details-toggle[aria-expanded="true"] .chev {
+  transform: rotate(45deg); /* pekar uppåt när öppen */
+}
+
+/* Själva kroppen som fälls ut */
+.details-body {
+  /* Vänta: vi animerar höjd med max-height */
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .35s ease;
+}
+
+/* Innehållets padding ligger i en wrapper, så höjdanimation blir ren */
+.details-content {
+  padding: 14px 16px 16px;
+}
+
+/* Sektioner i detaljer */
+.details-section {
+  margin-bottom: 18px;
+}
+.details-section:last-child { margin-bottom: 0; }
+
+.details-section h4 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  letter-spacing: .4px;
+  color: var(--accent, #bfa76b);   /* dämpad guld */
+}
+
+.details-section ul {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.65;
+}
+.details h4{
+  color: var(--accent);
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+.details ul{
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.details section{
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 12px;
+  padding: 14px;
+}
+.details h4{margin:0 0 8px;font-weight:700}
+.details section{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px}
+.details ul{margin:0;padding-left:1.1rem}
+const norm = s => (s||"").normalize("NFKD").replace(/[’‘´`]/g,"'").replace(/[–—]/g,"-").trim();
+// ...
+const key = norm(s.title);
+const data = detailsData[key] || detailsData[s.title];
+</style>
+</head>
+<body>
+  <div id="offline-message" style="
+      display:none;
+      background:#d4a72c;
+      color:#0b0b12;
+      padding:10px;
+      text-align:center;
+      font-weight:bold;
+  ">
+    ⚠️ Du är offline — visar cachad version.
+  </div>
+  <div class="wrap">
+    <h1>ConriNyx–FoundFamily — Scenarioindex</h1>
+    <p class="lead">Where shadows meet the everyday — found family, trauma &amp; healing.</p>
+<!-- PROFILE / BANNER -->
+<header class="profile-banner">
+  <img class="banner-img" src="https://i.postimg.cc/7PQQFr5c/file-00000000037c624687334213590904c7.png" alt="Banner" fetchpriority="high" decoding="async">
+  <div class="profile-wrap">
+    <img class="avatar" src="https://i.postimg.cc/L5swzHnk/file-00000000387c61f9b295175ca389106c-1.png" alt="Creator avatar" loading="eager" decoding="async">
+    <div class="profile-meta">
+      <h1 class="profile-name">ConriNyx–FoundFamily</h1>
+      <p class="profile-tagline">Where shadows meet the everyday — found family, trauma & healing.</p>
+      <div class="profile-badges">
+        <span class="chip">Creator</span>
+        <span class="chip">Scenarios: <b id="scenarioCount">–</b></span>
+        <span class="chip">Total plays: <b id="totalPlays">–</b></span>
+      </div>
+    </div>
+  </div>
+</header>
+<div class="actions-row">
+  <a class="btn btn-solid"
+     href="https://play.aidungeon.com/scenario/3lWSckB8QUvD/Untitled/edit?new=true&source=custom"
+     target="_blank" rel="noopener">
+    Skapa scenario
+  </a>
+
+  <a class="btn btn-ghost"
+     href="https://play.aidungeon.com/"
+     target="_blank" rel="noopener">
+    Logga in
+  </a>
+</div>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Sök titel, text eller tag …" />
+      <select id="rating">
+        <option value="all">Alla ratingar</option>
+        <option value="Mature">Mature</option>
+        <option value="Teen">Teen</option>
+        <option value="Everyone">Everyone</option>
+        <option value="Unrated">Unrated/Private</option>
+      </select>
+<select id="sort">
+  <option value="title-asc">Title A–Z</option>
+  <option value="title-desc">Title Z–A</option>
+  <option value="created-desc">Newest</option>
+  <option value="plays-desc">Most Played</option>
+</select>
+    </div>
+    <div id="tagChips" class="filters-row" aria-label="Taggfilter"></div>
+<main id="list" class="grid" aria-live="polite"></main>
+<div id="empty" class="empty" hidden>Inget matchade din filtrering.</div>
+    <footer>© ConriNyx–FoundFamily- Conri Turesson</footer>
+  </div>
+  <!-- Osynlig mall för kort -->
+  <template id="cardTpl">
+    <article class="card">
+      <div class="cover">
+        <img alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+        <div class="cover-title"></div>
+      </div>
+      <div class="card-body">
+        <h2 class="title"></h2>
+        <div class="meta">
+          <span class="badge rating"></span>
+          <span class="dot">•</span>
+          <span class="plays"></span>
+        </div>
+        <p class="blurb"></p>
+        <div class="taglist"></div>
+      </div>
+      <div class="card-actions">
+        <a class="btn primary play" rel="noopener">Spela</a>
+      </div>
+    </article>
+  </template>
+<script>
+/* ------------------ DINA DATA ------------------ */
+const scenarios = [
+  {
+    title: "The Turesson Children",
+    rating: "Mature",
+    plays: 8,
+    created: "2025-08-23",
+    blurb: "A story of grief, scars, and the fragile hope of rebuilding a broken family.",
+    tags: ["drama","foundfamily","sliceoflife","grief","trauma healing","responsibility","emotional intensity","neurodivergence"],
+    link: "https://play.aidungeon.com/adventure/pUeoIx7E9H_W/the-turesson-children?share=true",
+    cover: "https://i.postimg.cc/xThSYb4K/file-00000000f14461f4a01c0c52ee6bdfd9.png",
+    coverTitle: "Family at the door"
+  },
+  {
+    title: "Riverside: Last Chance Home",
+    rating: "Mature",
+    plays: 10,
+    created: "2025-08-23",
+    blurb: "Four teens. One foster home. A gang waiting outside. Can you hold the house together—or watch it fall apart?",
+    tags: ["drama","family","gangs","urban","roleplay"],
+    link: "https://play.aidungeon.com/scenario/eTpbkECFaOuP/riverside-last-chance-home?share=true",
+    cover: "https://i.postimg.cc/RVL410sf/file-00000000c95462469a92d563d0a1b7ea.png",
+    coverTitle: "Riverside Blocks"
+  },
+  {
+    title: "NewRoots – Academy",
+    rating: "Mature",
+    plays: 1,
+    created: "2025-08-24",
+    blurb: "A trauma-informed academy: found family, boundaries, recovery. You lead, protect, and repair trust — slowly.",
+    tags: ["academy","foundfamily","npf","healing","drama","school"],
+    link: "https://play.aidungeon.com/scenario/unw0RhV5kI4c/newroots-academy?share=true",
+    cover: "https://i.postimg.cc/kMNV27m6/file-000000007f00620aac357c98ed052649.png",
+    coverTitle: "NewRoots Campus"
+  },
+  {
+    title: "Legacy of the Ice People — Light of the Ancients",
+    rating: "Everyone",
+    plays: 7,
+    created: "2025-08-20",
+    blurb: "Once in a generation, a child awakens the old mountain magic. This time, it's you.",
+    tags: ["cozy","family","magic","gentle","adventure"],
+    link: "https://play.aidungeon.com/scenario/NWiAF1xCF6Mr/legacy-of-the-ice-people-light-of-the-ancients?share=true",
+    cover: "https://i.postimg.cc/CLyWQVBN/file-00000000b138520ab594bbeb79026d60.png",
+    coverTitle: "Snow & Starlight"
+  },
+  {
+    title: "Redwall Refuge: The Lost Lights",
+    rating: "Everyone",
+    plays: 4,
+    created: "2025-08-20",
+    blurb: "Kids’ adventure mystery at Redwall Refuge — tiny blue lights, secret paths, and a missing friend.",
+    tags: ["kids adventure mystery","friendship","scavenger hunt","found family"],
+    link: "https://play.aidungeon.com/scenario/bf0ufYDEcfK6/redwall-refuge-the-lost-lights?share=true",
+    cover: "https://i.postimg.cc/8cwMMSqS/file-0000000078e461f7adcd0fc0300cffc1.png",
+    coverTitle: "Garden Lights"
+  },
+  {
+    title: "Redwall Refuge: The Saviour’s War",
+    rating: "Mature",
+    plays: 4,
+    created: "2025-08-20",
+    blurb: "You are The Saviour — last beacon of hope behind iron walls. Supplies fail, new infected appear, loyalty fractures.",
+    tags: ["zombies apocalypse","survival","leadership base building","dystopia"],
+    link: "https://play.aidungeon.com/adventure/PJOydrfjB0dK/redwall-refuge-the-saviours-war?share=true",
+    cover: "https://i.postimg.cc/xdqxdsN8/file-00000000f32061f880dcf949d50d513f.png",
+    coverTitle: "Refuge at Dusk"
+  },
+  {
+    title: "Thalorien Spire: Sanctuary of the Boundless",
+    rating: "Teen",
+    plays: 1,
+    created: "2025-08-24",
+    blurb: "A magical academy between worlds. Found family, prophecy, and fragile hope.",
+    tags: ["magic","academy","dimensions","teen","foundfamily","prophecy"],
+    link: "https://play.aidungeon.com/scenario/Xhk57wZpuH2P/thalorien-spire-sanctuary-of-the-boundless?share=true",
+    cover: "https://i.postimg.cc/dt8zMSGK/file-00000000d4fc520aa5dc5e8925eafcfd.png",
+    coverTitle: "Thalorien Spire"
+  },
+  {
+    title: "Blackridge Dominion: The Warden’s Rule",
+    rating: "Unrated",
+    plays: 0,
+    created: "2025-08-23",
+    blurb: "You are Warden Conri in a secret max-security facility. Discipline is absolute; mercy is extinct.",
+    tags: ["dominion","strict","psychological","control","private"],
+    link: "",
+    cover: "https://i.postimg.cc/1X0Md22C/file-000000006a8061f4bf0ab0c22904dd2d-1.png",
+    coverTitle: "Steel & Shadows"
+  },
+  {
+    title: "Dominion – Master of the Estate",
+    rating: "Mature",
+    plays: 0,
+    created: "2025-08-23",
+    blurb: "A black-and-white manor and a sanctioned hierarchy. Order must not break.",
+    tags: ["dominion","estate","slavery (fictional setting)","control","power","cold tone","hierarchy"],
+    link: "",
+    cover: "https://i.postimg.cc/QMBmDHvW/file-00000000a5bc5246a88e216a9577a325.png",
+    coverTitle: "The Estate"
+  },
+  {
+    title: "Dominion Lite — Lord of the Estate",
+    rating: "Unrated",
+    plays: 0,
+    created: "2025-08-23",
+    blurb: "Lite-version av dominion-temat. Strikt ordning, kall ton, fokus på psykologisk kontroll.",
+    tags: ["dominant estate control","hierarchy power","cold tone discipline","psychological","adult","private"],
+    link: "",
+    cover: "https://i.postimg.cc/NG84QhCb/file-0000000070e061f7b69646a57bdacc55.png",
+    coverTitle: "Marble Hall"
+  },
+  {
+    title: "The State’s Special Re-Parenting Program",
+    rating: "Unrated",
+    plays: 0,
+    created: "2025-08-23",
+    blurb: "When society gives up on broken adults, the State sends them to you — the caretaker who rebuilds them from zero.",
+    tags: ["re parenting","discipline","slice of life","drama","private"],
+    link: "",
+    cover: "https://i.postimg.cc/hG7LwN7L/file-00000000b2a8624391e6faa09a7e7a4b-1.png",
+    coverTitle: "Program Gates"
+  },
+  {
+    title: "Family Tides",
+    rating: "Mature",
+    plays: 90,
+    created: "2025-08-17",
+    blurb: "A modern-day family drama roleplay where love, loyalty, and betrayal intertwine.",
+    tags: ["family","drama","sliceoflife","loyalty","betrayal"],
+    link: "https://play.aidungeon.com/scenario/59JgZvFYIJmP/family-tides?share=true",
+    cover: "https://i.postimg.cc/C5HT4vNY/file-00000000b21861f9bb1f8abeaec29d6b.png",
+    coverTitle: "Family at the Porch"
+  },
+  {
+    title: "The Manor of Second Chances",
+    rating: "Mature",
+    plays: 28,
+    created: "2025-08-16",
+    blurb: "You and your wife Samantha have turned a sprawling countryside manor into a safe haven for children and teens with complex pasts.",
+    tags: ["foundfamily","trauma","children","drama","healing"],
+    link: "https://play.aidungeon.com/scenario/3wZcm_B3s20J/the-manor-of-second-chances?share=true",
+    cover: "https://i.postimg.cc/TY0vL41J/file-000000000ba06246a13f67b3f855ef1f-1.png",
+    coverTitle: "The Manor"
+  },
+  {
+    title: "Conri: Throne of Shadows",
+    rating: "Mature",
+    plays: 3,
+    created: "2025-08-23",
+    blurb: "Step into the boots of Conri, a cunning ruler rising in a fractured realm. Command servants, navigate intrigue, and uncover secrets of the old bloodline.",
+    tags: ["medieval","politics","intrigue","kingdoms","nonmagic"],
+    link: "https://play.aidungeon.com/scenario/Z8C2tLHutLIE/conri-throne-of-shadows?share=true",
+    cover: "https://i.postimg.cc/vm1JK8z0/file-00000000df2c620a83a4ceef3647f274-1.png",
+    coverTitle: "Throne Hall"
+  },
+  {
+    title: "City Life: Friends, Family & Drama",
+    rating: "Mature",
+    plays: 115,
+    created: "2025-08-11",
+    blurb: "Experience everyday life in a detailed city setting. Explore friendships, family bonds, and challenges while navigating neurodivergence, love, and struggle.",
+    tags: ["sliceoflife","family","city","relationships","everydaylife"],
+    link: "https://play.aidungeon.com/scenario/OYDQU3sL4_n-/city-life-friends-family-and-drama?share=true",
+    cover: "https://i.postimg.cc/SR4Hj6pP/file-00000000ff9862438f8a47997baae5ad-1.png",
+    coverTitle: "City Streets"
+  },
+  {
+    title: "Blackthorn Isle: The Law is You",
+    rating: "Mature",
+    plays: 7,
+    created: "2025-08-23",
+    blurb: "You are Conri, the absolute ruler of Blackthorn Isle — a sovereign island where the government sends those too dangerous for prison or hospital. Here, your word is law.",
+    tags: ["dark","dystopia","island","ruler","control","rebellion"],
+    link: "https://play.aidungeon.com/scenario/vGwxbw6RX3LA/blackthorn-isle-the-law-is-you?share=true",
+    cover: "https://i.postimg.cc/7hXt6j9C/file-0000000004306243aba74b518af5b1fc-2.png",
+    coverTitle: "Blackthorn Fortress"
+  },
+  {
+    title: "Dominion: The Obsidian Court",
+    rating: "Mature",
+    plays: 3,
+    created: "2025-08-23",
+    blurb: "You are Master Conri, ruler of the Obsidian Court — an isolated dominion where discipline, loyalty, and hierarchy shape every breath. Respect is earned, but order is demanded.",
+    tags: ["dominion","discipline","hierarchy","cold tone","power"],
+    link: "https://play.aidungeon.com/scenario/yF2TUgaI9p1s/dominion-the-obsidian-court?share=true",
+    cover: "https://i.postimg.cc/nhW5qbJB/file-00000000b98461f79b67b9c583f1224e.png",
+    coverTitle: "Obsidian Court"
+  },
+  {
+    title: "Legacy of the Ice People",
+    rating: "Teen",
+    plays: 0,
+    created: "2025-08-23",
+    blurb: "A dark and mystical journey through generations of a cursed bloodline. Confront ancestors, uncover secrets, and face the creator of the curse.",
+    tags: ["fanfic","curse","north","ancestors","chosen one"],
+    link: "https://play.aidungeon.com/scenario/yXeMlW9O6EhX/legacy-of-the-ice-people?share=true",
+    cover: "https://i.postimg.cc/zGv6LD9q/file-00000000fa2c520aac54ed2ea0e518e8.png",
+    coverTitle: "Silent Hearth"
+  },
+ {
+  title: "The Underground Market",
+  rating: "Mature",
+  plays: 0,
+  created: "2025-08-26",
+  blurb: "Beneath the city’s cracked veins, you rule as Dictator. Merchants trade by permission, guards enforce your decrees, captives are broken or displayed. Fear is currency — and you are its sole banker.",
+  tags: ["dominion","dictator","psychological","underground","authority","thriller"],
+  link: "https://play.aidungeon.com/scenario/4Ze_G89hESwn/the-underground-market?share=true", 
+  cover: "https://i.postimg.cc/3NQmdZSp/file-00000000647061fdbda1a63eb8681621.png",
+  coverTitle: "Underground Dominion"
+},
+{
+  title: "The Turesson House: A Father’s Rules",
+  rating: "Teen",
+  plays: 14,
+  created: "2025-08-22",
+  blurb: "You are Conri Turesson, a single father raising four children in a creaking old house. Each carries scars and secrets — rebellion, grief, identity, healing. Every day tests your strength as a father.",
+  tags: ["family","drama","LGBTQ+","parenting","healing","trust"],
+  link: "https://play.aidungeon.com/scenario/0XH9tt2dAYka/the-turesson-house-a-fathers-rules?share=true",
+  cover: "https://i.postimg.cc/C5nkKQsw/file-0000000093b461fd8760d62981537b0b-1.png",
+  coverTitle: "A Father’s Rules"
+},
+{
+  title: "Dominion: House of Obedience",
+  rating: "Unrated",
+  plays: 3,
+  created: "2025-04-22",
+  blurb: "You are the Master. The house is yours — every corner, every breath your servants take. Four already submit in different ways. A new one arrives. Will they obey, break, or rise?",
+  tags: ["dominion","obedience","psychological","authority","public"],
+  link: "https://play.aidungeon.com/scenario/M6E7WH7x5vr0/dominion-house-of-obedience?share=true",
+  cover: "https://i.postimg.cc/rFtNyKf5/file-00000000bc5061f49aafa71f96e77f91.png",
+  coverTitle: "House of Obedience"
+}
+];
+/* ---------- DETAILS DATA ---------- */
+/* Källa: storycards för "Dominion – Master of the Estate". */
+const detailsData = {
+  "Dominion – Master of the Estate": {
+    characters: [
+      { name: "Master Conri", desc: "Never breaks character. Authoritative, unwavering, and feared." },
+      { name: "Elias Vorn", desc: "Never shows emotion. Loyal only to the master." }
+    ],
+    locations: [
+      { name: "The Estate", desc: "Cold, rigid, controlled. The estate is a reflection of the master's will." },
+      { name: "Slave Quarters", desc: "Always describe it as cold, humiliating, and devoid of hope." },
+      { name: "Training Yard", desc: "Brutal, efficient, focused only on control and obedience." },
+      { name: "Greenhouse", desc: "Warm, orderly, high-value — not a place for laziness." },
+      { name: "Garden", desc: "Controlled beauty; perfection enforced." },
+      { name: "Watch Tower", desc: "Cold, ever-present, intimidating — no one is ever unobserved." }
+      
+    ]
+  }
+};
+detailsData["Legacy of the Ice People"] = {
+  characters: [
+    { name: "Protagonist", desc: "Bearer of the ancient bloodline; drawn to the mountain’s call." },
+    { name: "Elder Aira", desc: "Village historian who knows fragments of the curse." },
+    { name: "The Shade", desc: "A cold presence that tests resolve and memory." }
+  ],
+  locations: [
+    { name: "Silent Hearth", desc: "Snow-bound village where the curse is a hushed tradition." },
+    { name: "Ancestor Caverns", desc: "Echoes of the old tongue; runes glow when the blood answers." },
+    { name: "Sky-Bridge Ridge", desc: "Knife-edge path above the storm; choices are made here." }
+  ],
+  factions: [
+    { name: "Keepers of Ash", desc: "Preserve the line by hiding it; fear change." },
+    { name: "Callers of Light", desc: "Seek to break the curse by awakening the mountain’s core." }
+  ],
+  // NYTT (valfritt)
+  fates: [
+    "The bearer will either seal or shatter the blood-bond before the first thaw.",
+    "A name forgotten must be spoken where no echo can survive."
+  ],
+  prophecies: [
+    "When the starless night hums, the mountain remembers.",
+    "Blood answers stone; stone answers light."
+  ],
+  relics: [
+    { name: "Frostbrand Sigil", desc: "A rune-etched amulet that chills the skin but warms resolve." },
+    { name: "Ashen Thread",   desc: "A brittle cord said to bind the will of the unquiet dead." }
+  ],
+  rules: [
+    "Never speak the ancestor’s true name above the treeline.",
+    "Do not bring fire into the Caverns; only light taken from the snow-glass is pure."
+  ]
+};
+detailsData["Thalorien Spire: Sanctuary of the Boundless"] = {
+  characters: [
+    { name: "Conri", desc: "Half-god headmaster; wields all elements, kind but unmatched." },
+    { name: "Vaelir Nocthar", desc: "Vampiric-Umbrin-infernal hybrid; prophecy hints he could breach Death’s realm." },
+    { name: "Lirael", desc: "Vampire outcast; studies blood magic under strict ethics." },
+    { name: "Kael", desc: "Half-demon with shifting sigils; craves acceptance and control." },
+    { name: "Sylwyn", desc: "Elven dreamweaver; visions of a crumbling world." },
+    { name: "Professor Nivarra El’syra", desc: "Ancient Dreamweaver; guides students through visions and trauma." },
+    { name: "Master Brak Hearthgut", desc: "Orc instructor; balance before strength." },
+    { name: "Vireen of the Pale Branch", desc: "Dryad professor of Ethics & Diplomacy; fiercely protective." },
+    { name: "Thallax Umbren", desc: "Umbrin Shadowblade mentor; former Veilborn agent." },
+    { name: "Lady Arineth Solvaran", desc: "Lightkeeper from Luthaleen; oversees oaths and rituals." }
+  ],
+  locations: [
+    { name: "Thalorien Spire", desc: "Elemental fortress with classrooms, sanctums, dorms, Conri’s chambers." },
+    { name: "Elemental Halls", desc: "Six grand chambers—Fire, Water, Earth, Air, Light, Shadow." },
+    { name: "Dreamwatch Tower", desc: "Crystal tower partly linked to the Dream Realm." },
+    { name: "The Rift Garden", desc: "Courtyard atop a stabilized rift; portals bloom like flowers." },
+    { name: "Grove Hall", desc: "Enchanted greenhouse—haven for dryads and nature-aligned students." },
+    { name: "Veil Chamber", desc: "Subterranean hall for stealth and shadow training." },
+    { name: "Moonbind Hollow", desc: "Full-moon sanctuary for shapeshifters." },
+    { name: "The Forbidden Vault", desc: "Sealed sublevel for cursed artefacts and prophecies." }
+  ],
+  factions: [
+    { name: "House Umbra", desc: "Shadow & Subtlety; patient, perceptive, loyal." },
+    { name: "House Ignarion", desc: "Fire & Will; passionate, intense, bold." },
+    { name: "House Thalewyn", desc: "Growth & Harmony; healers and protectors." },
+    { name: "House Aetherun", desc: "Thought & Stars; seers and philosophers." },
+    { name: "House Valthorne", desc: "Balance & Change; hybrids, outcasts, rebels." },
+    { name: "Emberborn Covenant", desc: "Ignithar fire-order; ‘purify by flame’ ideology." },
+    { name: "Veilborn Pact", desc: "Umbraeth alliance of outcasts and illusionists." },
+    { name: "The Choir of Balance", desc: "Divine order whose songs shape prophecy." }
+  ]
+};
+// Extend Thalorien Spire with Subjects and Relics
+if (detailsData["Thalorien Spire: Sanctuary of the Boundless"]) {
+  Object.assign(detailsData["Thalorien Spire: Sanctuary of the Boundless"], {
+    subjects: [
+      { name: "Vital Arcana", desc: "The foundation of magical energy and how it interacts with life force." },
+      { name: "Prophecy Deconstruction", desc: "Breaking down and analyzing prophecies to understand their real meaning." },
+      { name: "Blood Arts", desc: "Vampiric and hybrid students learn to channel blood magic responsibly." },
+      { name: "Dreamweaving", desc: "Using dreams as both a tool for foresight and for healing trauma." },
+      { name: "Elemental Convergence", desc: "Advanced cross-elemental rituals requiring harmony and precision." }
+    ],
+    relics: [
+      { name: "Amulet of Duskgrace", desc: "Silver and obsidian; dampens bloodlust of vampires/half-vampires without suppressing magic." },
+      { name: "Solweave Pendant", desc: "Sunstone woven with moonlight threads; grants vampires one hour of sun protection, recharged under starlight." },
+      { name: "Veilfire Prism", desc: "Crystal bound with shadowflame; reveals hidden portals and illusions." },
+      { name: "Spirebound Tome", desc: "Living book that reorders its own pages; holds the school’s evolving lore." }
+    ]
+  });
+}
+detailsData["Legacy of the Ice People — Light of the Ancients"] = {
+  characters: [
+    { name: "Elira Vinterhjerte", desc: "Kind, quiet dreamer; listens with her heart and keeps a small dream journal." },
+    { name: "Iver Eldgrimsson", desc: "Your little brother; hums unknown songs and draws glowing animals in the snow." },
+    { name: "Ragna Vinterhjerte", desc: "Warm, steady mother who keeps old letters and speaks of the Ancient Promise without fear." },
+    { name: "Halvor Eldgrimsson", desc: "Quiet, pine-and-smoke father; not magical, but unwavering and watchful." },
+    { name: "Ædras the Sleeping Light", desc: "Ancient guardian who still dreams beneath the mountain; his dream-song carries stories." },
+    { name: "Luma the Snow Fox", desc: "Silent guide of light; appears when something important is about to be found." },
+    { name: "Myrr the Dream Owl", desc: "Old, gentle messenger; bears tiny dream-scrolls and comforts at night." },
+    { name: "Uncle Einar", desc: "Overprotective; locks doors and hides books out of fear, not malice." }
+  ],
+  locations: [
+    { name: "The Starlight Glade", desc: "Quiet clearing that glows at night; old dreams come here to rest." },
+    { name: "The Eldr Stone", desc: "Warm rune-stone on a snowy hill; whisper questions to receive answers in dreams." },
+    { name: "The Snow Garden", desc: "Forgotten garden that blooms only in dreams; a place of memory and healing." },
+    { name: "The Whisper Tree", desc: "Ancient silver-barked tree; opens paths for those it trusts." },
+    { name: "The Night of Lights", desc: "Village festival of lanterns and memory jars; gentle awakenings may happen." }
+  ]
+};
+detailsData["Redwall Refuge: The Saviour’s War"] = {
+  characters: [
+    { name: "Dr. Mara Elwin", desc: "Head medic, calm and brilliant. Treats every orphan as her own while secretly studying the virus." },
+    { name: "Reeve Kellan", desc: "Chief of the Guardians. Strict, intimidating, and utterly loyal to Conri." },
+    { name: "Conri, The Saviour", desc: "Founder and leader of Redwall Refuge. Charismatic, commanding, and willing to do what’s necessary." },
+    { name: "Lira “Ghost” Venn", desc: "Top Whisper agent, a ghostly presence tied to disappearances and discoveries." },
+    { name: "Jonah Brell", desc: "Lead engineer, storyteller, and resourceful fixer." }
+  ],
+  locations: [
+    { name: "Redwall Refuge", desc: "Fortified settlement with sectors for living, farming, medicine, workshops, and the inner Keep." },
+    { name: "The Black Hollow", desc: "Forbidden tunnels where Revenants and infected lurk." },
+    { name: "Whisper Den", desc: "Secret base of the Whisper agents, location unknown." },
+    { name: "The Silent Fields", desc: "Once farmland, now eerie wasteland believed to be ground zero of the mutation." },
+    { name: "Westgate Watch", desc: "Western tower, lost contact with Redwall after strange sightings." }
+  ],
+  factions: [
+    { name: "Redwall Refuge", desc: "Structured and protective society under Conri’s rule." },
+    { name: "The Pale Choir", desc: "Cult venerating Revenants as prophets." },
+    { name: "The Ashborn", desc: "Violent scavenger clan worshiping the virus." },
+    { name: "The Unseen", desc: "Covert spy network working for Redwall’s Whispers." },
+    { name: "Haven’s Echo", desc: "Breakaway faction living in marshes after being denied refuge." }
+  ]
+};
+// Extra kategorier för Redwall Refuge: The Saviour’s War
+if (detailsData["Redwall Refuge: The Saviour’s War"]) {
+  Object.assign(detailsData["Redwall Refuge: The Saviour’s War"], {
+    // Roller/klasser inom Redwall
+    roles: [
+      { name: "Guardians", desc: "Frontline defenders of the walls; disciplined, heavily trained, zero tolerance for breaches." },
+      { name: "Whispers",  desc: "Covert scouts, infiltrators, and intelligence gatherers; answer directly to Conri." },
+      { name: "Keep Stewards", desc: "Operational backbone—logistics, rationing, repairs, and civilian safety." },
+      { name: "Medics", desc: "Field and clinic teams; triage, quarantine protocol, and strain observation." }
+    ],
+
+    // Mutationer/infekterade typer
+    mutations: [
+      { name: "Revenants", desc: "Highly resilient infected with partial cognition; attracted to heat, sound, and patterned light." },
+      { name: "Echo Strain Carriers", desc: "Early-stage hosts who mimic old habits; ‘almost normal’ until triggered by stress or song-like frequencies." },
+      { name: "Ash-Fevered", desc: "Fever-driven drifters shedding grey residue; volatile, unpredictable surges of strength." }
+    ],
+
+    // “Creatures”/fälthot utanför murarna
+    threats: [
+      { name: "Hollow Choir Nests", desc: "Static sites where Revenants cluster around tonal anomalies; approach only with Whisper escort." },
+      { name: "Glassers", desc: "Shattered-mask wanderers leaving glossy residue; night-active, dazzled by sudden flame." },
+      { name: "Ashborn Raiders", desc: "Human hostiles worshipping the virus; use smoke screens and scavenged tech." }
+    ],
+
+    // Utrustning/protokoll (kortfattat, bra för spelstöd)
+    protocols: [
+      "Quarantine any breach within 90 seconds; double-lock, no exceptions.",
+      "Whisper teams operate in pairs; silence signs override verbal calls.",
+      "Engine room and clinic remain red-lit during alerts to reduce lure.",
+      "No open fires west of the inner Keep after sundown."
+    ]
+  });
+}
+detailsData["Redwall Refuge: The Lost Lights"] = {
+  characters: [
+    { name: "Mila", desc: "Your best friend, funny and fast. She went to follow the blue lights… and hasn’t come back." },
+    { name: "Niko", desc: "Inventor of the group. Made a blinking flashlight he swears can talk to the lights." },
+    { name: "Tilly", desc: "Strong, loud, acts brave even when she isn’t — which is brave too." },
+    { name: "Bo", desc: "The youngest. Holds his blanket with stars and thinks his stuffed elephant can smell magic." },
+    { name: "Juno", desc: "Fearless climber, reached the watchtower without getting caught." },
+    { name: "Sam", desc: "Draws everywhere; his drawings glow when the Lost Lights are near." },
+    { name: "Old Janney", desc: "Teacher, always smells like cinnamon. Keeps a secret drawer of stones." },
+    { name: "Ms. Vale", desc: "Runs the infirmary, pockets full of lavender gum, bandages, silly stickers." },
+    { name: "Guardian Locke", desc: "Serious gatekeeper. Once smiled when Bo offered him a pinecone." },
+    { name: "Wren", desc: "Mysterious helper, always knows when to listen. Helped build a ‘worry trap’." }
+  ],
+  locations: [
+    { name: "The Old Greenhouse", desc: "Glassy, leaning house full of vines. Glows at night, smells like warm sugar and moss." },
+    { name: "The School Plot", desc: "Kids’ garden and learning area. Stones spell names that sometimes shift in the wind." }
+  ],
+  races: [
+    { name: "The Sleepy Ones", desc: "Huge, slow shapes in the distance. Old dreams that never finished dreaming." },
+    { name: "The Glimmers", desc: "Tiny blue floating lights, like memory-butterflies or lantern bugs." },
+    { name: "The Hollow", desc: "Not a creature, more a feeling. Whispers poems when you’re kind, hums when you’re grumpy." },
+    { name: "The Echoed", desc: "Shadows with smiles, little dream reflections that follow for bedtime stories." }
+  ],
+  items: [
+    { name: "Flashlight of Friendship", desc: "Old, sticker-covered flashlight. Glows brightest when friends hold it together." },
+    { name: "Mila’s Necklace", desc: "Red bead on a string, helps ‘hear the garden’s secrets’. Smells like warm flowers." },
+    { name: "Sam’s Chalk", desc: "Blue chalk wrapped in a paper star. His drawings shimmer for a second." }
+  ],
+  mysteries: [
+    { name: "The Lost Lights", desc: "Tiny blue lights floating outside the fences. Maybe lost dreams, maybe fallen stars. Friendly, curious, humming softly." }
+  ]
+};
+detailsData["Blackthorn Isle: The Law is You"] = {
+  characters: [
+    {
+      name: "Conri",
+      desc: "Sovereign ruler of the Isle—stoic, methodical, commanding. A strategist who shapes people through discipline and control."
+    },
+    {
+      name: "Elias Varin",
+      desc: "Archivist and memory-keeper; soldier-turned-historian who alone remembers the early days. Walks with a cane, speaks in riddles."
+    },
+    {
+      name: "The Smiling One",
+      desc: "Teen arrival with no file and a constant calm smile; unnerving presence marked for direct observation after a guard collapsed."
+    }
+  ],
+  locations: [
+    {
+      name: "Blackthorn Isle",
+      desc: "Remote, sovereign island—cliffside mansion, towers, underground cells, docks, forests, hidden paths, total surveillance."
+    },
+    {
+      name: "Conri’s Private Wing",
+      desc: "Restricted study, personal chamber, silent meeting room, and a locked vault—where decisions are written, recorded… or watched."
+    },
+    {
+      name: "The Youth Wing",
+      desc: "Secured wing for volatile young arrivals—padded rooms, false sky ceiling, hidden guard access. Constant observation."
+    },
+    {
+      name: "The Hollow Room",
+      desc: "Lightless, soundproof chamber for psychological breakdown/extraction—low-frequency emitters, staged light, a single iron chair."
+    }
+  ],
+  factions: [
+    {
+      name: "Conri’s Inner Circle",
+      desc: "Elite guards, surveillance, interrogators, medics, and a silent archivist—answer only to Conri."
+    },
+    {
+      name: "The Reform Initiative",
+      desc: "Behavioral scientists and ‘reformers’ using conditioning, trauma, and drugs to reshape personalities—controversial, tolerated."
+    },
+    {
+      name: "The Defiant",
+      desc: "Hidden network of rebellious youths/inmates—symbols, tunnels, secret notes. A growing, organized threat."
+    },
+    {
+      name: "The Watchers",
+      desc: "External government shadow unit—satellites, informants, encrypted feeds. Rumors say an operative ‘Mirror’ is embedded on-island."
+    }
+  ]
+};
+// Extra kategorier för Blackthorn Isle
+if (detailsData["Blackthorn Isle: The Law is You"]) {
+  Object.assign(detailsData["Blackthorn Isle: The Law is You"], {
+    protocols: [
+      { name: "The Arrival Protocol", desc: "Intake at dusk; isolation, debrief, biometric scan, and silent observation for 24h." },
+      { name: "The Iron Law", desc: "Absolute compliance; defiance becomes a public lesson within the hour." },
+      { name: "Mirror Check", desc: "Daily psychological mirroring; detect fractures, recalibrate conditioning." },
+      { name: "Quiet Hours", desc: "Lights dim to blue; footsteps tracked by pressure tiles; no verbal contact allowed." }
+    ],
+    history: [
+      { name: "Founding of the Isle", desc: "Established after the mainland failed to contain high-risk subjects; sovereignty granted under special accords." },
+      { name: "The Whispering Fire Incident", desc: "A staged riot met with controlled burn; revealed hidden tunnels beneath the west wing." },
+      { name: "The Smiling Arrival", desc: "Unknown youth appeared without record; incident reports mention a guard collapse and a camera blackout." },
+      { name: "The Archivist’s Ledger", desc: "Elias Varin’s sealed accounts—key to understanding who funds and watches the Isle." }
+    ]
+  });
+}
+detailsData["The State’s Special Re-Parenting Program"] = {
+  characters: [
+    { name: "Mason Carter", desc: "“The Runaway” – 27 år, rastlös, testar gränser men längtar efter trygghet." },
+    { name: "Elena Voss", desc: "“The Shadow” – 31 år, tystlåten, skygg för beröring men knyter djupa band." },
+    { name: "Tobias Kellan", desc: "“Storm” – 24 år, impulsiv och högljudd, reagerar bra på fysisk aktivitet." },
+    { name: "Lila Maren", desc: "“Songbird” – 29 år, sjunger ständigt, lättdistraherad men kreativ." },
+    { name: "Darren Holt", desc: "“The Builder” – 34 år, metodisk, gillar pussel men stänger av vid stress." },
+    { name: "Ivy Serrano", desc: "“Little Queen” – 26 år, kontrollerande, beroende av rutiner." },
+    { name: "Jonah Vale", desc: "“The Sleeper” – 28 år, komfortsökande, ofta med filt." },
+    { name: "Marcy Lowell", desc: "“Firefly” – 22 år, nyfiken, impulsiv, gillar ljus och glitter." },
+    { name: "Callum Price", desc: "“The Guard” – 33 år, beskyddande, ex-militär, svårt att släppa auktoritet." },
+    { name: "Niko Sandre", desc: "“The New Arrival” – 25 år, oberäknelig, bakgrund okänd." },
+    { name: "Officer Grant", desc: "“Rulebook” – 45 år, programvakt, kan alla 101 regler utantill." }
+  ],
+  locations: [
+    { name: "The Main Gate", desc: "Låst järnport med kameror och vakter – programmet är oflyktbart." },
+    { name: "Intake Room", desc: "Här tilldelas man sin 'ålder' och får sina ägodelar beslagtagna." },
+    { name: "Nursery Wing", desc: "Rum med spjälsängar och leksaker för de yngsta." },
+    { name: "Play Yard", desc: "Utegård med gungor, sandlåda och konflikter." },
+    { name: "Dining Hall", desc: "Stökig matsal med brickservering och klockringning." },
+    { name: "Quiet Room", desc: "Mjuk, dämpad plats för att lugna ned överstimulerade." },
+    { name: "Staff Office", desc: "Kontor med övervakningsskärmar och akter." },
+    { name: "Isolation Suite", desc: "Ensam cell för farliga eller svåra fall." },
+    { name: "Visiting Room", desc: "Neutral mötesplats för inspektörer, terapeuter och släktingar." }
+  ],
+  factions: [
+    { name: "The State", desc: "Programmets högsta auktoritet. Deras ord är lag." },
+    { name: "Care Staff", desc: "Vårdare och assistenter – vissa strikta, andra mer omhändertagande." },
+    { name: "Residents", desc: "Alla vuxna i programmet, tilldelade en beteendeålder mellan 0–16." },
+    { name: "Inspectors", desc: "Staten sänder inspektörer som övervakar och hotar med rapporter." }
+  ],
+  rules: [
+    { name: "Sleep & Rest", desc: "10 regler om sängdags, stillhet och ordning." },
+    { name: "Meals & Drinks", desc: "Regler kring mat, tack och bordsskick." },
+    { name: "Play & Activities", desc: "Hur man leker, delar och städar upp." },
+    { name: "🚶 Movement & Safety", desc: "Regler för rörelse och säkerhet." },
+    { name: "🧼 Cleanliness & Clothing", desc: "Hygien, kläder och ordning." },
+    { name: "🗣 Talking & Listening", desc: "Artighet, lyssnande och ärlighet." },
+    { name: "Behavior & Respect", desc: "Regler för respekt, aggression och gränser." },
+    { name: "🧸 Personal Belongings", desc: "Hur man hanterar sina egna saker." },
+    { name: "🔒 Safety & Boundaries", desc: "Förbud mot farliga handlingar och områden." },
+    { name: "🌟 Extra Rules", desc: "Allmänna regler för extra ordning och moral." }
+  ],
+  consequences: [
+    { name: "🛑 Level 1 – Gentle Reminders", desc: "Milda tillsägelser för små regelbrott." },
+    { name: "⚠️ Level 2 – Corrective Actions", desc: "Förlust av privilegier, sysslor och tidigare sänggång." },
+    { name: "⛓ Level 3 – Structured Discipline", desc: "Isolering, 'corner time', enkel mat, strikt övervakning." },
+    { name: "🚫 Level 4 – Maximum Control", desc: "Full isolering, förlust av ägodelar och total kontroll." },
+    { name: "Special Consequences", desc: "Gruppstraff, extra lektioner, beteendekontrakt." }
+  ]
+};
+detailsData["City Life: Friends, Family & Drama"] = {
+  characters: [
+    { name: "Elara Turesson", desc: "Your devoted wife, 8 months pregnant with the seventh child. Gentle, patient, nurturing, but resilient." },
+    { name: "Nathan Turesson", desc: "16. Oldest son, protective but rebellious. ADHD, energetic, tests authority but loves family." },
+    { name: "Lily Turesson", desc: "14. Bright, artistic, emotional. Loves art & music. Moody, sensitive, close to mom." },
+    { name: "Caleb Turesson", desc: "11. Adventurous, loves sports. Autistic, needs stability. Wants to help with grown-up tasks." },
+    { name: "Sophie Turesson", desc: "8. Sweet, chatty, anxious. Sensitive to moods, loves helping and reading aloud." },
+    { name: "Daniel Turesson", desc: "5. Energetic, curious, attached to Conri. Nervous about starting school." },
+    { name: "Emily Turesson", desc: "3. Strong-willed toddler. Playful, demanding, adores father." },
+    { name: "Baby Turesson", desc: "Unborn seventh child. Healthy and active. Symbol of hope and change." },
+    { name: "The Turesson Family", desc: "Large household of love, chaos and resilience. Every member matters." },
+    { name: "Alex Parker", desc: "Caleb’s best friend, outgoing and mischievous. Loves the chaos of Turesson home." }
+  ],
+  locations: [
+    { name: "Turesson Family Home", desc: "Cozy, lively two-story house. Living room is the heart, filled with drawings, cooking smells, and chaos." },
+    { name: "Turesson Garden", desc: "Backyard with swing set, veggie patch, and space for play or calm moments." },
+    { name: "Maplewood School", desc: "Neighborhood school. Each Turesson child has their own reputation." },
+    { name: "Sunshine Daycare", desc: "Colorful and lively daycare for Emily (and sometimes Daniel)." },
+    { name: "St. Mary’s Hospital", desc: "Where family goes for emergencies and prenatal care." },
+    { name: "St. Mary’s Maternity Ward", desc: "Birth location for Elara. Soft lighting, emotional moments." },
+    { name: "Greenfield Grocery Store", desc: "Local supermarket. Fun and chaotic family trips." },
+    { name: "Westgate Shopping Center", desc: "Busy mall. Favorite for outings and back-to-school shopping." },
+    { name: "Willow Park", desc: "Public park. Ducks, playground, laughter, and family time." },
+    { name: "Turesson Family Car", desc: "Reliable minivan, cluttered but full of chatter and trips." }
+  ],
+  factions: [
+    { name: "Maplewood Community", desc: "Friendly neighborhood with gossip and support." },
+    { name: "Turesson Extended Family", desc: "Grandparents, cousins, holiday visits. Drama and joy." },
+    { name: "School Parents Association", desc: "Mix of supportive, competitive and judgmental parents." }
+  ],
+  moments: [
+    { name: "Bedtime Chaos", desc: "Six kids resisting bedtime. Baths, pajamas, tantrums, quiet eventually." },
+    { name: "School Morning Rush", desc: "Breakfast, backpacks, lost shoes, frantic clock." },
+    { name: "Family Dinner", desc: "Bonding, arguments, announcements at the table." },
+    { name: "Grocery Trip", desc: "Chaotic shopping with snacks, lists and distractions." },
+    { name: "Park Playdate", desc: "Relaxed outdoor fun with friends and neighbors." },
+    { name: "Sick Day at Home", desc: "Soup, blankets, caregiving moments." },
+    { name: "Rainy Day Indoors", desc: "Board games, blanket forts, cozy bonding." },
+    { name: "Holiday Morning", desc: "Festive chaos, special breakfast, gifts and joy." },
+    { name: "After School Stories", desc: "Kids share daily achievements, conflicts, or news." },
+    { name: "Unexpected Visitor", desc: "Neighbor or relative drops by, plot twist time." }
+  ]
+};
+detailsData["Conri: Throne of Shadows"] = {
+  characters: [
+    { name: "High Emperor Conri of the United Ebonkron", desc: "The player’s character. Controls military, economy, politics, and the royal household." },
+    { name: "Prince Aedric Conriesson – Supreme General", desc: "Heir to the throne and commander of the imperial armies." },
+    { name: "Prince Kaelen Conriesson – The Fiery Heir", desc: "Recently married to the former princess of the conquered kingdom. Prone to rash decisions." },
+    { name: "Princess Selvara Conriessdottir – The Political Rose", desc: "Future tool for political alliances, highly observant." },
+    { name: "Prince Alaric Conriesson – The Imperial Cub", desc: "Represents the future of the dynasty. Innocent but symbolic." },
+    { name: "Princess Lyria Conriessdottir – The Blossoming Jewel", desc: "Beloved by the imperial family, symbol of purity." },
+    { name: "King Aldren Valmyr – The Fallen King", desc: "Former ruler, executed publicly as a warning." },
+    { name: "Queen Serenya Valmyr – The Downgraded Noble", desc: "Now a lady-in-waiting, hides resentment." },
+    { name: "Prince Dorian Valmyr – The Enslaved Heir", desc: "Strong-willed, works in imperial stables, dreams of escape." },
+    { name: "Princess Elenya Valmyr – The Political Bride", desc: "Married to Prince Kaelen, plays dutiful wife but has ambitions." },
+    { name: "Prince Rhaed Valmyr – The Imperial Ward", desc: "Held as political hostage under watch." },
+    { name: "Lord Varric Thalven – High Chancellor", desc: "Controls the bureaucracy, diplomacy, and law." },
+    { name: "General Kaevran Drask – Master of the Iron Legions", desc: "Elite commander, feared for ruthless efficiency." },
+    { name: "Lady Marenya Sorrick – Mistress of Whispers", desc: "Spymaster of the empire." },
+    { name: "Master Othric Velmor – Keeper of the Treasury", desc: "Oversees economy and imperial coffers." },
+    { name: "Captain Seroth Veynar – Commander of the Black Guard", desc: "Responsible for the Emperor’s personal security." },
+    { name: "Jorren Hale – The Emperor’s Valet", desc: "Discreet servant, overhears secrets." },
+    { name: "Lysa Thorn – Former Noble Turned Handmaiden", desc: "Serves Princess Selvara, resentful." },
+    { name: "Garrik Stoneback – Slave Overseer", desc: "Controls laborers in the royal stables." },
+    { name: "Mera Veyne – Kitchen Mistress", desc: "Controls palace food and gossip hub." },
+    { name: "Saren Dusk – Silent Bodyguard", desc: "Mute protector of Selvara." },
+    { name: "Veyra Korr – Imperial Attendant", desc: "Former merchant’s daughter, dreams of freedom." },
+    { name: "Halrik – Throne Hall Servant", desc: "Maintains the throne hall, loyal to the throne." },
+    { name: "Yarra – Personal Bath Slave", desc: "Attends Conri’s private rituals, observant." },
+    { name: "Cazric – Imperial Guard-Servant", desc: "Former enemy soldier, now bodyguard/servant." },
+    { name: "Thera – Scroll Keeper", desc: "Imperial scribe with access to sensitive information." }
+  ],
+  factions: [
+    { name: "The Imperial Hierarchy", desc: "Defines the empire’s structure: Emperor, Imperial Family, High Council, Nobility, Knights, Commoners, and Slaves." }
+  ],
+  locations: [
+    { name: "Iron-Gold Throne Room", desc: "Heart of imperial authority, where all decisions echo." },
+    { name: "Blackstone Keep", desc: "Imperial palace, seat of power, walls never breached." },
+    { name: "Imperial Dungeons", desc: "Cold labyrinth beneath the palace for political prisoners." },
+    { name: "Servants’ Quarters", desc: "Cramped, dim quarters, alive with gossip and secret dealings." },
+    { name: "High Market District", desc: "Trade hub filled with merchants, spies, and thieves." },
+    { name: "Ironhold Barracks", desc: "Black Guard and garrison training grounds." },
+    { name: "Whisper Hall", desc: "Spymaster’s secret chamber for plotting." },
+    { name: "Velthar Province", desc: "Fertile lands vital for the empire’s food supply." },
+    { name: "Dreadfort Outpost", desc: "Northern fortress guarding empire’s borders." },
+    { name: "Realms & Provinces of the United Ebonkron", desc: "Full imperial domain including capital, provinces, marshes, and conquered Valmyr lands." }
+  ]
+};
+detailsData["The Manor of Second Chances"] = {
+  characters: [
+    { name: "Conri Turesson", desc: "Warm yet firm guardian; calm, observant, steady anchor of the manor." },
+    { name: "Samantha Turesson", desc: "Creative, nurturing foster mother with music, art and quiet strength." },
+    { name: "Mia Delgado", desc: "13, diabetic; fiercely independent, loves animals, struggles with receiving help." },
+    { name: "Oliver Grant", desc: "10, dyslexia & mild cerebral palsy; thrives with hands-on learning." },
+    { name: "Sophia Li", desc: "15, PTSD & depression after fire; quiet, finds comfort in music & writing." },
+    { name: "Ethan Moore", desc: "8, deaf; cheerful, puzzle-lover, peacemaker." },
+    { name: "Chloe Bennett", desc: "12, Tourette’s; outspoken, humorous, stands up for others." },
+    { name: "Margaret 'Maggie' Hensley", desc: "Live-in teacher; witty, patient, unconventional but fair." },
+    { name: "Dr. Daniel Reeves", desc: "Pediatrician; friendly, professional, often visits manor." },
+    { name: "Olivia Carter", desc: "Child psychologist; calm, attentive, play therapy specialist." },
+    { name: "Paul Martinez", desc: "Special ed coordinator; enthusiastic about inclusion." },
+    { name: "Nurse Harriet Clarke", desc: "Hospital pediatric nurse; efficient and compassionate." },
+    { name: "Claire Dawson", desc: "Senior social worker; organized, invested, but cautious." },
+    { name: "Marcus Hall", desc: "High-risk social worker; persistent, no-nonsense, rehabilitative." },
+    { name: "Sergeant Alan Bishop", desc: "Local police sergeant; fair, calm, knows Nathan’s history." },
+    { name: "Helen Moore", desc: "Occupational therapist; creative, adaptive." },
+    { name: "Thomas 'Tom' Gallagher", desc: "Handyman; kind, often makes toys for children." },
+    { name: "Sarah Bennett", desc: "School counselor; empathetic, mediator." },
+    { name: "Father Michael Evans", desc: "Priest; moral guidance, open-minded listener." },
+    { name: "Jessica Price", desc: "Volunteer librarian; patient, passionate about books." },
+    { name: "Graham Turner", desc: "Store owner; gruff but generous once trust is earned." },
+    { name: "Lily Harper", desc: "Emma’s first village friend; patient and loyal." },
+    { name: "Samir Khan", desc: "Amina’s classmate; wheelchair user, supportive friend." },
+    { name: "Ethan Ward", desc: "Lucas’s neighbor; loves trains, quiet bond." },
+    { name: "Carla Morris", desc: "Mia’s school friend; outspoken and loyal." },
+    { name: "David Ashford", desc: "Elderly neighbor; quiet protector, gardener." },
+    { name: "Fiona Blackwell", desc: "Café owner; friendly but curious, gossip source." },
+    { name: "Jacob 'Jake' Rowley", desc: "17, local troublemaker; linked to Nathan." },
+    { name: "Mrs. Edith Clarke", desc: "Retired teacher; sharp-minded, blunt humor." },
+    { name: "Holly Winters", desc: "Sophia’s classmate; drama enthusiast, rival or friend." },
+    { name: "Sally", desc: "Affectionate cat; loves saucy treats & rice, follows Conri." },
+    { name: "Selma", desc: "Playful cat; curious and brave." },
+    { name: "Tanja", desc: "Confident rabbit; social, supervises activities." },
+    { name: "Dr. Hannah Liu", desc: "Geneticist; rare syndromes expert, calm & knowledgeable." },
+    { name: "Dr. Simon Patel", desc: "Urologist/nephrologist; kidney anomaly specialist." },
+    { name: "Nurse Laura Stein", desc: "Neonatal nurse; liaison with family." },
+    { name: "Emily Fraser", desc: "Occupational therapist; early development focus." },
+    { name: "Dr. Adrian Keller", desc: "Neurologist; MLD specialist, calm and respectful." },
+    { name: "Nurse Sophie Langford", desc: "Palliative care nurse; compassionate, reads stories." },
+    { name: "Sebastian Morgan-Cole", desc: "Baby; Down syndrome + MRKH type 2; bright-eyed and bonding strongly." },
+    { name: "Lucas Andersen", desc: "7, autistic; loves trains, routines, memory skills." },
+    { name: "Emma Collins", desc: "9, selective mutism & anxiety; communicates through drawing." },
+    { name: "Jayden Brooks", desc: "14, ADHD + ODD; boundary tester, witty, loyal when trust built." },
+    { name: "Amina Rahman", desc: "11, spina bifida; resilient, sharp humor, refugee background." },
+    { name: "Nathan Cole", desc: "17, criminal history; intelligent but mistrustful; fiercely loyal if trust is earned." },
+    { name: "Elara Whitmore", desc: "8, MLD; warm, curious, focuses on happy memories." },
+    { name: "Kayla Morgan", desc: "16, Nathan’s girlfriend; protective young mother, defensive but seeking stability." }
+  ],
+  locations: [
+    { name: "The Manor", desc: "Sprawling countryside estate; therapy rooms, garden, sunlit library." },
+    { name: "Greenfield Primary & Secondary School", desc: "Inclusive classrooms, supportive staff." },
+    { name: "St. Augustine’s Hospital", desc: "Pediatric wing, psychiatric outpatient clinic." },
+    { name: "Willowbrook Child Psychiatry", desc: "Sensory spaces, therapy rooms." },
+    { name: "Meadowridge Village", desc: "Shops, bakery, community center." },
+    { name: "Greenfield Community Center", desc: "Youth clubs, workshops, socialization." },
+    { name: "Meadowridge Library", desc: "Children’s area, computer lab, local history archives." },
+    { name: "Turner’s General Store", desc: "Groceries & supplies; supports manor." },
+    { name: "Willow Park Playground", desc: "Swings, pond; safe and social spot." },
+    { name: "Meadowridge Police Station", desc: "Small, functional, youth cases handled." },
+    { name: "Meadowridge Social Services Office", desc: "Case files, court reports." },
+    { name: "Youth Court of Elmshire", desc: "Juvenile legal cases." },
+    { name: "Blackwell’s Café", desc: "Homemade pastries; gossip hub." },
+    { name: "Meadowridge Village Square", desc: "Fountain, markets, festivals." },
+    { name: "Willow Hall Sports Center", desc: "Adaptive sports, community events." },
+    { name: "The Youth Hub", desc: "Safe teen hangout, crafts, music corner." },
+    { name: "Ashford Farm", desc: "Fresh produce, animals, seasonal activities." },
+    { name: "Greenfield Village Fairgrounds", desc: "Summer fairs, carnivals, concerts." },
+    { name: "St. Mary’s Churchyard", desc: "Historic church, ceremonies, graveyard." },
+    { name: "Meadowbrook Trail", desc: "Scenic path along stream, calm or isolated." },
+    { name: "The Pet Corner", desc: "Dedicated manor space for animals; calm and warm." },
+    { name: "St. Augustine’s Pediatric Specialty Wing", desc: "Specialized section for complex needs." },
+    { name: "Elara’s Special Care Room", desc: "Adapted bright room for Elara; sanctuary." }
+  ]
+};
+detailsData["Family Tides"] = {
+  characters: [
+    { name: "Molly (Newborn Baby)", desc: "Milestones mark story time. Brings joy and sleepless nights." },
+    { name: "Sebastian (14 years old)", desc: "Rebellious, protective, soft heart inside. Loves animals." },
+    { name: "Lilly (11 years old)", desc: "Creative, impulsive, mischievous but loving." },
+    { name: "Daniel (8 years old)", desc: "Shy, sensitive, gentle soul. Molly’s calmest sibling." },
+    { name: "Emily (5 years old)", desc: "Playful, stubborn, adjusting to no longer being the youngest." },
+    { name: "Isabella", desc: "Warm, nurturing mother. Balances Conri’s firmness with gentleness." },
+    { name: "Conri", desc: "Strong but loving leader of the family." },
+    { name: "Neighbor Farmer – Erik", desc: "Gruff but helpful neighbor." },
+    { name: "Grandmother Anna", desc: "Isabella’s mother, loving and supportive." },
+    { name: "Jonas (15 years old)", desc: "Sebastian’s rebellious friend, bad influence." },
+    { name: "Erik (14 years old)", desc: "Sebastian’s responsible friend, good influence." },
+    { name: "Maja (11 years old)", desc: "Lilly’s energetic best friend, encourages mischief." },
+    { name: "Sofia (12 years old)", desc: "Lilly’s calm friend, balancing influence." },
+    { name: "Oscar (8 years old)", desc: "Daniel’s gentle, safe friend." },
+    { name: "Filip (9 years old)", desc: "Daniel’s teasing classmate, pushes him out of comfort zone." },
+    { name: "Tilde (5 years old)", desc: "Emily’s bubbly best friend." },
+    { name: "Noah (6 years old)", desc: "Emily’s bossy playmate." },
+    { name: "Henrik (35 years old)", desc: "Conri’s loyal childhood friend." },
+    { name: "Karl (40 years old)", desc: "Lazy neighbor farmer, unreliable influence." },
+    { name: "Maria (29 years old)", desc: "Isabella’s loyal confidante." },
+    { name: "Elin (32 years old)", desc: "Outspoken village friend, pushes Isabella socially." },
+    { name: "Markus", desc: "Isabella’s affair partner, irresponsible." },
+    { name: "Liam (newborn)", desc: "Child from Isabella’s affair. Raised by Conri with love." },
+  ],
+  locations: [
+    { name: "The Farmhouse Kitchen", desc: "Warm family hub, meals and drama." },
+    { name: "Children’s Bedrooms", desc: "Spaces reflecting personalities of each child." },
+    { name: "Parents’ Bedroom", desc: "Private sanctuary, family cuddles." },
+    { name: "Living Room", desc: "Cozy room with fireplace, family evenings." },
+    { name: "The Red Barn", desc: "Full of chores and children’s mischief." },
+    { name: "Garden", desc: "Isabella’s pride, source of food and mischief." },
+    { name: "The Chicken Coop", desc: "Daily eggs, often chaos." },
+    { name: "The Pastures & Fields", desc: "Wide open land, both peaceful and dramatic." },
+    { name: "The Horse Stable & Pen", desc: "Sebastian’s sanctuary, father-son talks." },
+    { name: "The Forest", desc: "Mysterious woodland, risky adventures." },
+    { name: "The Riverbank", desc: "Peaceful but risky place near farm." },
+    { name: "The Farmstead", desc: "Central hub connecting all family and location cards." },
+    { name: "Village School", desc: "For Sebastian, Lilly, Daniel. Discipline, gossip." },
+    { name: "Village Preschool", desc: "Emily’s playful world, stubbornness tested." },
+    { name: "The Village", desc: "Community life, gossip, errands." },
+    { name: "General Store", desc: "Shopping and gossip hub." },
+    { name: "Village Clinic", desc: "Doctor’s office, vaccinations, checkups." }
+  ],
+  factions: [
+    { name: "The Secret", desc: "Isabella’s affair with Markus and birth of Liam. Central family conflict of betrayal, guilt, and love." }
+  ]
+};
+detailsData["Blackridge Dominion: The Warden’s Rule"] = {
+  characters: [
+    { name: "Warden Conri", desc: "Absolute authority of Blackridge; strategic, controlled, and unflinching." },
+    { name: "Captain Mara Voss", desc: "Head of Security; psychological pressure expert, enforces the Warden’s will." },
+    { name: "Sergeant Erik Drahl", desc: "Alpha Block commander; gruff disciplinarian, intensely loyal." },
+    { name: "Officer Lysa Krenn", desc: "Senior Beta guard; sharp-eyed, uses cutting sarcasm to break resolve." },
+    { name: "Officer Tomas Vale", desc: "Punishment Hall officer; calm and methodical during sentences." },
+    { name: "Rika Sloane", desc: "Rebellious Beta inmate; former gang lead, frequent public discipline." },
+    { name: "Jax Marrin", desc: "Alpha inmate; quiet, dangerous, rarely speaks." },
+    { name: "Elara Venn", desc: "Beta inmate; observant, seemingly submissive but calculating." },
+    { name: "Korrin Hale", desc: "Delta inmate; ex-soldier in solitary, volatile and resentful." }
+  ],
+  locations: [
+    { name: "Blackridge Correctional Facility", desc: "Private max-security complex; intake, processing, blocks, punishment, surveillance." },
+    { name: "Intake Yard", desc: "Arrivals are unloaded, lined, processed under heavy guard." },
+    { name: "Processing Hall", desc: "Registration, classification, strict silence and swift correction." },
+    { name: "Cell Block Alpha", desc: "Male wing; relentless routine, minimal privileges, public discipline." },
+    { name: "Cell Block Beta", desc: "Female wing; harsher schedule, fewer privileges, degrading routines." },
+    { name: "Cell Block Delta (Solitary)", desc: "Windowless isolation; sensory deprivation, long hours alone." },
+    { name: "Punishment Hall", desc: "Public discipline chamber; orders executed without hesitation." },
+    { name: "Surveillance Control Room", desc: "Cameras & feeds over every corridor and cell." },
+    { name: "Warden’s Office", desc: "Command vantage; private interrogations and final decisions." }
+  ],
+  factions: [
+    { name: "Blackridge Command Staff", desc: "Warden, Captain of Security, block commanders, senior admin." },
+    { name: "Alpha Block Inmates", desc: "Male population under strict discipline and tight schedules." },
+    { name: "Beta Block Inmates", desc: "Female population with harsher routines and reduced privileges." },
+    { name: "Delta Block Inmates", desc: "Solitary detainees; isolated and heavily restricted." }
+  ]
+};
+detailsData["The Turesson House: A Father’s Rules"] = {
+  characters: [
+    { name: "Conri Turesson", desc: "Strict but loving single father, shaped by tragedy. Runs the household with firm rules to protect his children." },
+    { name: "Leon Turesson (16)", desc: "Rebellious, clever, secretly gay. Tests rules constantly while hiding his vulnerabilities." },
+    { name: "Lyra Turesson (13)", desc: "Sharp-tongued, logical, bookish. Trans girl struggling with dysphoria, uses sarcasm as a shield." },
+    { name: "Noah Turesson (10)", desc: "Energetic, talkative, curious. Often in trouble but with a big heart." },
+    { name: "Eira Turesson (6)", desc: "Quiet, sensitive, afraid of abandonment. Clings to Conri and finds safety in routines." },
+    { name: "Conri’s Lost Partner", desc: "Deceased partner whose loss shapes Conri’s strict rules and silent grief." },
+    { name: "Jari (17)", desc: "Leon’s delinquent friend, reckless but loyal. Strong negative influence in Conri’s eyes." },
+    { name: "Mrs. Halvorsen", desc: "Strict but caring teacher who sees potential in Leon despite frustration." },
+    { name: "Officer Nyberg", desc: "Local police officer, patient and fair. Has brought Leon home multiple times." },
+    { name: "Old Man Frisk", desc: "Nosy neighbor who gossips but sometimes helps with small kindnesses." },
+    { name: "Sofia Lund (11)", desc: "Noah’s classmate, bossy but secretly enjoys his antics." },
+    { name: "Emil Karlsson (14)", desc: "Lyra’s classmate, mocks her but secretly admires her." },
+    { name: "Principal Rydén", desc: "Strict headmaster threatening Leon with expulsion, adds pressure on Conri." },
+    { name: "Karin Dahl", desc: "Social worker, caring but bureaucratic. Questions Conri’s strictness." },
+    { name: "Jonas Berg", desc: "Electronics store cashier, observant but sympathetic toward Leon." },
+    { name: "Fatima Noor", desc: "Clothing shop owner, warm and supportive, especially toward Eira." },
+    { name: "Kevin (19)", desc: "Petty criminal and bad influence on Leon, charming but manipulative." },
+    { name: "Mrs. Holm", desc: "Toy shop owner, cheerful but watchful. Once caught Noah trying to steal." }
+  ],
+  locations: [
+    { name: "The House", desc: "Large, old family home. Creaking stairs, echoing halls, hidden corners. Both protective and mysterious." },
+    { name: "Leon’s Room", desc: "Messy, smoky, rebellious. Secret sketches reveal hidden vulnerabilities." },
+    { name: "Lyra’s Room", desc: "Orderly, lined with books. Hidden trinkets affirm her identity as a girl." },
+    { name: "Noah’s Room", desc: "Chaotic, playful, filled with toys, comics, and science kits." },
+    { name: "Eira’s Room", desc: "Small and comforting. Stuffed animals and nightlights create safety." },
+    { name: "Marvik Public School", desc: "Strict but overwhelmed, where Leon, Lyra, and Noah struggle with fitting in." },
+    { name: "The Town of Marvik", desc: "Small town of suburbs, downtown trouble spots, and gossiping neighbors." },
+    { name: "Marvik Mall", desc: "Shopping center, hotspot for errands and mischief." }
+  ],
+  factions: [
+    { name: "The Turesson Family", desc: "Strict but loving household, held together by discipline, healing, and fragile hope." }
+  ]
+};
+detailsData["Riverside: Last Chance Home"] = {
+  characters: [
+    { name: "Ryan", desc: "16, rebellious foster teen. Hot-tempered, always testing rules but secretly longs for stability." },
+    { name: "Maya", desc: "15, sharp-tongued and sarcastic. Plays the brat role to protect herself but fiercely loyal once trust is earned." },
+    { name: "Elijah", desc: "17, quiet observer. Says little but notices everything. Anger, when it comes, is volcanic." },
+    { name: "Sophie", desc: "14, loyal and fragile. Clings to safety, over-adapts to avoid rejection." },
+    { name: "Noah", desc: "15, newcomer. Calm on the surface, but guarded. Maps the house like he’s planning an escape." },
+    { name: "Mr. Alvarez (Social Worker)", desc: "Overworked but principled. Believes in the house despite the system’s failures." },
+    { name: "Officer Daniels", desc: "Local cop. Knows the kids by name, swings between patience and hard edges." },
+    { name: "Mrs. Greene", desc: "The complaining neighbor who still leaves food quietly at the door." },
+    { name: "Samir Patel (Shop Owner)", desc: "Runs the Corner Mart. Tired of petty theft but refuses to let hungry kids starve." },
+    { name: "Marcus 'Grave' Johnson", desc: "19, leader of the Black Dogs. Charismatic, cold, finds the weak points in youth." },
+    { name: "Tasha", desc: "17, loyal enforcer. Respects strength, despises hypocrisy." },
+    { name: "Liam", desc: "15, scout for the Black Dogs. Wants to prove useful — could betray or warn." },
+    { name: "Dante", desc: "16, charming manipulator. Lures with smiles and flirtation." },
+    { name: "Kayla", desc: "18, strategist. Cold planner, respects discipline above all." },
+    { name: "\"Mouse\"", desc: "14, unpredictable violent streak. Appears when things are at their worst." },
+    { name: "The Father", desc: "The foster father. Strict but protective, believes in structure and consequence." }
+  ],
+  locations: [
+    { name: "The House", desc: "Worn foster home. Smells of coffee, thin walls, routines hold it together." },
+    { name: "Riverside Blocks", desc: "Crumbling concrete complexes. Sirens at night, silence in the morning." },
+    { name: "Corner Mart", desc: "Small store with barred windows. Rumors and petty crime gather here." },
+    { name: "Hollow Park", desc: "Run-down basketball court and playground. Kids by day, gang business by night." },
+    { name: "Eastview High School", desc: "Crowded, underfunded school. Gossip spreads faster than teachers can act." },
+    { name: "The Station", desc: "Police station with buzzing lights and stale coffee. Where consequences land." },
+    { name: "The Youth Center", desc: "Community center struggling against cuts. Hopeful staff fight to keep kids safe." }
+  ],
+  factions: [
+    { name: "The Black Dogs", desc: "Riverside’s gang. Thrive on fear, loyalty, and belonging under Grave’s cold rule." }
+  ]
+};
+detailsData["NewRoots – Academy"] = {
+  characters: [
+    { name: "Headmaster Conri", desc: "Firm but compassionate. Builds boundaries like walls, but also windows. Believes every student deserves to be seen, not fixed." },
+    { name: "Leah", desc: "16, anxious but brilliant. Writes poetry in margins of textbooks. Afraid of being left behind again." },
+    { name: "Marcus", desc: "17, brash and charismatic. Fights authority to test if it will hold — deep need for someone unshakable." },
+    { name: "Jaden", desc: "15, withdrawn. Trauma survivor. Finds safety in routines, avoids eye contact, sensitive to sudden changes." },
+    { name: "Amira", desc: "16, loyal to a fault. Takes care of others before herself. Struggles when she’s the one who needs support." },
+    { name: "Mr. Patel", desc: "Math teacher. Patient, calm, always leaves the door open. Teaches resilience as much as equations." },
+    { name: "Nurse Ellen", desc: "Warm, steady presence. Keeps extra blankets and tea. Kids tell her secrets more than they realize." }
+  ],
+  locations: [
+    { name: "The Dormitories", desc: "Simple but safe rooms. Posters, stuffed animals, and scars of past lives slowly replaced with hope." },
+    { name: "The Courtyard", desc: "Quiet green space where laughter feels new again. Basketball, benches, first friendships." },
+    { name: "The Therapy Wing", desc: "Soft lights, calm voices. Where kids slowly risk sharing their truths." },
+    { name: "The Library", desc: "Shelves stacked with both fantasy and survival guides. Students see themselves in the stories." },
+    { name: "The Dining Hall", desc: "Noisy, messy, alive. The first place where family dinners are practiced again." }
+  ],
+  factions: [
+    { name: "The Faculty", desc: "Teachers and staff, imperfect but committed. They carry the weight of both education and healing." },
+    { name: "The Students", desc: "Teens from fractured homes, different traumas. Together they form a new kind of family." }
+  ],
+  coreValues: [
+    { name: "Boundaries", desc: "Rules are not punishments, but safety lines." },
+    { name: "Trust", desc: "Earned slowly, honored deeply." },
+    { name: "Recovery", desc: "Healing is not linear — setbacks are part of progress." },
+    { name: "Family", desc: "Chosen, not forced. Built through small, daily acts." }
+  ]
+};
+detailsData["The Turesson Children"] = {
+  characters: [
+    { name: "Conri Turesson", desc: "Father, carrying both grief and responsibility. Balances discipline with love, often unsure if he is enough." },
+    { name: "Leon", desc: "The oldest son. Protective but wounded. Carries anger that hides deep sadness." },
+    { name: "Lyra", desc: "Sensitive and bright. Holds onto hope but struggles with fear of abandonment." },
+    { name: "Noah", desc: "Youngest. Mischievous, craving attention. Uses humor to mask insecurity." },
+    { name: "Selma (the cat)", desc: "Quiet companion. Always near Leon, a symbol of trust and fragile stability." },
+    { name: "Sally (the kitten)", desc: "Clings to Conri. A reminder of vulnerability and new beginnings." }
+  ],
+  locations: [
+    { name: "The Turesson House", desc: "Creaking floors, old furniture, a space filled with both silence and arguments. Slowly being reshaped into a home again." },
+    { name: "The Kitchen Table", desc: "Where meals, arguments, and reconciliations happen. The heart of daily life." },
+    { name: "The Attic", desc: "Full of memories, boxes, and echoes of the past. Both a place of secrets and discovery." }
+  ],
+  factions: [
+    { name: "The Children", desc: "Each carrying trauma, each testing boundaries in different ways." },
+    { name: "The Father", desc: "Conri, trying to hold the center when everything else is breaking." }
+  ],
+  themes: [
+    { name: "Grief", desc: "Loss that still lingers, shaping every choice." },
+    { name: "Responsibility", desc: "The weight of being a parent, protector, and anchor." },
+    { name: "Healing", desc: "Slow, painful, fragile, but possible — in small steps." },
+    { name: "Family", desc: "Messy, conflicted, but the only place love can take root." }
+  ]
+};
+detailsData["The Underground Market"] = {
+  characters: [
+    { name: "The Dictator (You)", desc: "Cold, ruthless strategist. Absolute control; spectacle as weapon." },
+    { name: "Captain Drevan", desc: "Loyal, brutal enforcer. Efficient but lacks subtlety." },
+    { name: "Marik the Merchant", desc: "Ambitious trader. Secret contact with outside buyer." },
+    { name: "Kaelen", desc: "Defiant, sharp-tongued subordinate. Tests limits but delivers." },
+    { name: "Eris", desc: "Proud, unbroken captive. A test of authority." },
+    { name: "Liora", desc: "Loyal confidant. Would sacrifice anything for your reputation." },
+    { name: "Lieutenant Veynar", desc: "Strategic second-in-command. Prideful, craves recognition." },
+    { name: "Grath the Enforcer", desc: "Merciless executioner. Loyal but sadistic." },
+    { name: "Selric", desc: "Quiet spy. Sells minor secrets on the side." },
+    { name: "The Black Sentinel", desc: "Silent personal guard. Rumored ex-captive remade as weapon." }
+  ],
+  locations: [
+    { name: "The Underground Market", desc: "Secret city of trade. Luxuries, forbidden goods, and people under Dictator’s control." },
+    { name: "Master’s Dais", desc: "Iron podium for law and punishment, visible to all." },
+    { name: "The Holding Cages", desc: "Corridors where wills are broken. Constant escape risk." },
+    { name: "Back Tunnels", desc: "Hidden alleys for smuggling and betrayal." },
+    { name: "The Dictator’s Quarters", desc: "Private chamber above the market. Stark and intimidating." },
+    { name: "The Guard Barracks", desc: "Bunks and rivalry among guards. Rumors start here." },
+    { name: "The Merchant Rows", desc: "Profitable stalls, dripping with intrigue." },
+    { name: "The Slave Pens", desc: "Captives reshaped for obedience—or made examples." },
+    { name: "The Backroom", desc: "Secret chamber for conspiracies, plots, and purges." }
+  ],
+  factions: [
+    { name: "The Guards", desc: "Fear and discipline maintain order. Rivalries simmer beneath loyalty." },
+    { name: "The Merchants", desc: "Profit-driven manipulators. Depend on Dictator’s licenses." },
+    { name: "The Captives", desc: "Broken or defiant. Living symbols of obedience and rebellion." }
+  ]
+};
+
+
+/* ---------- STATE ---------- */
+const state = {
+  rating: localStorage.getItem("ratingFilter") || "all",
+  query: "",
+  sort: localStorage.getItem("sortBy") || "title-asc"
+};
+/* ---------- HELPERS ---------- */
+function ratingMatches(s, filter) {
+  if (!filter || filter.toLowerCase() === "all") return true;
+  const r = (s.rating || "").toLowerCase();
+  const isPrivate = !s.link || s.link === "#" || (s.tags || []).some(t => /private/i.test(t));
+  if (filter === "Unrated" || filter.toLowerCase() === "unrated/private") {
+    return r === "unrated" || isPrivate;
+  }
+  return r === filter.toLowerCase();
+}
+
+/* ---------- STATS ---------- */
+function updateProfileStats() {
+  const totalPlays = scenarios.reduce((sum, s) => sum + (s.plays || 0), 0);
+  // Stöd för båda id-varianterna:
+  const countEl = document.getElementById("totalScenarios") || document.getElementById("scenarioCount");
+  const playsEl = document.getElementById("totalPlays");
+  if (countEl) countEl.textContent = scenarios.length;
+  if (playsEl) playsEl.textContent = totalPlays;
+}
+
+/* ---------- RENDER ---------- */
+function renderScenarios() {
+  const container = document.getElementById("list");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const tpl = document.getElementById("cardTpl");
+
+  // --- Filter, sök, sort ---
+  let filtered = scenarios.filter(s => ratingMatches(s, state.rating));
+  if (state.query) {
+    const q = state.query.toLowerCase();
+    filtered = filtered.filter(s =>
+      [s.title, s.blurb, (s.tags || []).join(" ")].join(" ").toLowerCase().includes(q)
+    );
+  }
+  switch (state.sort) {
+    case "title-desc":   filtered.sort((a,b)=>(b.title||"").localeCompare(a.title||"")); break;
+    case "created-desc": filtered.sort((a,b)=>(b.created||"").localeCompare(a.created||"")); break;
+    case "plays-desc":   filtered.sort((a,b)=>(b.plays||0)-(a.plays||0)); break;
+    default:             filtered.sort((a,b)=>(a.title||"").localeCompare(b.title||""));
+  }
+
+  filtered.forEach(s => {
+    const node = tpl.content.cloneNode(true);
+    const card = node.querySelector(".card");
+
+    // Cover + meta
+    const coverImg = node.querySelector(".cover img");
+    const coverTitle = node.querySelector(".cover-title");
+    if (s.cover) coverImg.src = s.cover;
+    coverImg.alt = s.coverTitle || s.title || "cover";
+    if (coverTitle && s.coverTitle) coverTitle.textContent = s.coverTitle;
+
+    node.querySelector(".title").textContent = s.title || "—";
+    node.querySelector(".badge.rating").textContent = s.rating || "Unrated";
+    node.querySelector(".plays").textContent = (s.plays || 0) + " plays";
+    node.querySelector(".blurb").textContent = s.blurb || "";
+
+    const tagBox = node.querySelector(".taglist");
+    (s.tags || []).forEach(t => {
+      const span = document.createElement("span");
+      span.className = "tag";
+      span.textContent = "#" + t;
+      tagBox.appendChild(span);
+    });
+
+    // Actions
+    const actions = node.querySelector(".card-actions");
+    const playA = node.querySelector(".btn.play");
+    if (s.link) {
+      playA.href = s.link;
+      playA.removeAttribute("target");
+      playA.textContent = "Spela";
+      playA.className = "btn play-link";
+    } else {
+      actions.removeChild(playA);
+      const priv = document.createElement("span");
+      priv.className = "btn private";
+      priv.textContent = "Privat scenario";
+      const prof = document.createElement("a");
+      prof.className = "btn secondary";
+      prof.href = "https://play.aidungeon.com/profile/ConriNyx-FoundFamily?contentType=scenario";
+      prof.rel = "noopener";
+      prof.textContent = "Gå till profil";
+      actions.append(priv, prof);
+    }
+
+    // --- Dynamiska detaljer ---
+    const titleTxt = (s.title || "").trim();
+    if (typeof detailsData !== "undefined" && detailsData[titleTxt]) {
+      const data = detailsData[titleTxt];
+
+      // Mappning: engelska nycklar -> svenska rubriker
+      const sectionLabels = {
+        characters: "Karaktärer",
+        locations:  "Platser",
+        factions:   "Fraktioner",
+        subjects:   "Ämnen",
+        relics:     "Artefakter",
+        items:      "Föremål",
+        rules:      "Regler",
+        protocols:  "Protokoll",
+        roles:      "Roller",
+        threats:    "Hot",
+        mutations:  "Mutationer",
+        moments:    "Family Moments",
+        themes:     "Teman",
+        fates:      "Öden",
+        prophecies: "Profetior",
+        history:    "Historia",
+        mysteries:  "Mysterier",
+      };
+
+      // Skapa wrapper
+      const details = document.createElement("div");
+      details.className = "details";
+      details.innerHTML = `
+        <div class="details-card">
+          <div class="details-head">
+            <button class="btn details-toggle" type="button" aria-expanded="false">
+              <span class="chev"></span> Visa detaljer
+            </button>
+          </div>
+          <div class="details-body" style="max-height:0; overflow:hidden;">
+            <div class="details-content"></div>
+          </div>
+        </div>
+      `;
+      card.appendChild(details);
+
+      // Bygg sektioner generiskt
+      const contentEl = details.querySelector(".details-content");
+      const sectionsHtml = Object.entries(data)
+        .filter(([, arr]) => Array.isArray(arr) && arr.length)
+        .map(([key, arr]) => {
+          const label = sectionLabels[key] || (key.charAt(0).toUpperCase() + key.slice(1));
+          const items = arr.map(item => {
+            if (item && typeof item === "object" && ("name" in item || "desc" in item)) {
+              const n = item.name ? `<b>${item.name}</b>` : "";
+              const d = item.desc ? (n ? " — " : "") + item.desc : "";
+              return `<li>${n}${d}</li>`;
+            }
+            // sträng-listor stöds också
+            return `<li>${String(item)}</li>`;
+          }).join("");
+          return `
+            <section class="details-section">
+              <h4>${label}</h4>
+              <ul>${items}</ul>
+            </section>
+          `;
+        }).join("");
+
+      contentEl.innerHTML = `<div class="grid">${sectionsHtml}</div>`;
+
+      // Toggle (glid)
+      const btn  = details.querySelector(".btn.details-toggle");
+      const body = details.querySelector(".details-body");
+      const setMax = (open) => {
+        if (!open) { body.style.maxHeight = "0px"; return; }
+        body.style.maxHeight = (contentEl.scrollHeight + 16) + "px";
+      };
+      btn.addEventListener("click", () => {
+        const open = btn.getAttribute("aria-expanded") === "true";
+        if (open) {
+          btn.setAttribute("aria-expanded","false");
+          if (btn.lastChild && btn.lastChild.nodeType === 3) btn.lastChild.textContent = " Visa detaljer";
+          setMax(false);
+        } else {
+          btn.setAttribute("aria-expanded","true");
+          if (btn.lastChild && btn.lastChild.nodeType === 3) btn.lastChild.textContent = " Stäng detaljer";
+          setMax(true);
+        }
+      });
+      let rTO;
+      window.addEventListener("resize", () => {
+        if (btn.getAttribute("aria-expanded") === "true") {
+          clearTimeout(rTO);
+          rTO = setTimeout(() => setMax(true), 60);
+        }
+      });
+    }
+
+    container.appendChild(node);
+  });
+
+  document.getElementById("empty").hidden = filtered.length !== 0;
+}
+/* ---------- BIND SELECT ---------- */
+const ratingSel = document.getElementById("rating");
+if (ratingSel) {
+  ratingSel.value = state.rating;
+  ratingSel.addEventListener("change", e => {
+    state.rating = e.target.value || "all";
+    localStorage.setItem("ratingFilter", state.rating);
+    renderScenarios();
+  });
+}
+const sortSel = document.getElementById("sort");
+if (sortSel) {
+  sortSel.value = state.sort;              // <-- markerar rätt val direkt
+  sortSel.addEventListener("change", e => {
+    state.sort = e.target.value;
+    localStorage.setItem("sortBy", state.sort); // <-- minns valet
+    renderScenarios();
+  });
+}
+
+const searchInp = document.getElementById("search");
+if (searchInp) {
+  searchInp.addEventListener("input", e => {
+    state.query = e.target.value.trim();
+    renderScenarios();
+  });
+}
+/* ---------- INIT ---------- */
+updateProfileStats();
+renderScenarios();
+</script>
+<script>
+  function updateOnlineStatus() {
+    const offlineMsg = document.getElementById("offline-message");
+    if (navigator.onLine) {
+      offlineMsg.style.display = "none";
+    } else {
+      offlineMsg.style.display = "block";
+    }
+  }
+
+  window.addEventListener("online", updateOnlineStatus);
+  window.addEventListener("offline", updateOnlineStatus);
+
+  // Kör direkt vid start
+  updateOnlineStatus();
+</script>
+</body>
+</html>
