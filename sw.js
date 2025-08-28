@@ -1,17 +1,15 @@
 // sw.js — enkel, robust offline + cache
 const CACHE_NAME = "conrinyx-cache-v3";
-const OFFLINE_URL = "/offline.html";
+const OFFLINE_URL = "/Conrinyx/offline.html";
 
-// Filer att förladda i cachen (lägg till vid behov)
 const PRECACHE = [
-  "/",
-  "/index.html",
+  "/Conrinyx/",
+  "/Conrinyx/index.html",
   OFFLINE_URL,
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png"
+  "/Conrinyx/manifest.json",
+  "/Conrinyx/icon-192.png",
+  "/Conrinyx/icon-512.png"
 ];
-
 // ----- INSTALL: förladda viktiga filer -----
 self.addEventListener("install", (event) => {
   event.waitUntil(
