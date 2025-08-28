@@ -1,15 +1,14 @@
 {
-  "id": "/",
+  "id": "/Conrinyx/",
   "name": "ConriNyx Scenarios",
   "short_name": "ConriNyx",
-  "start_url": "/index.html",
-  "scope": "/",
+  "start_url": "/Conrinyx/index.html",
+  "scope": "/Conrinyx/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "fullscreen"],
   "background_color": "#0b0b12",
   "theme_color": "#d4a72c",
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "/Conrinyx/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/Conrinyx/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
