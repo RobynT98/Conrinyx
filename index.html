@@ -6,14 +6,6 @@
 
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#d4a72c">
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js")
-        .then(reg => console.log("✅ Service Worker registrerad:", reg.scope))
-        .catch(err => console.error("❌ SW-fel:", err));
-    }
-  </script>
-
   <title>ConriNyx–FoundFamily — Scenarioindex</title>
 </head>
 <style>
@@ -1697,5 +1689,14 @@ renderScenarios();
   // Kör direkt vid start
   updateOnlineStatus();
 </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").then(reg => {
+      console.log("Service worker registered.", reg);
+    });
+  });
+    }
+  </script>
 </body>
 </html>
