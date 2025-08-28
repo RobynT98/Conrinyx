@@ -1689,14 +1689,18 @@ renderScenarios();
   // Kör direkt vid start
   updateOnlineStatus();
 </script>
-  <script>
-    if ("serviceWorker" in navigator) {
+<script>
+(function () {
+  if (!("serviceWorker" in navigator)) return;
+  const isGH = location.hostname.endsWith("github.io");
+  const base = isGH ? "/Conrinyx/" : "/";
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").then(reg => {
-      console.log("Service worker registered.", reg);
-    });
+    navigator.serviceWorker.register(base + "sw.js", { scope: base })
+      .then(reg => console.log("✅ SW:", reg.scope))
+      .catch(err => console.error("❌ SW error:", err));
   });
-    }
+})();
+</script>
   </script>
 </body>
 </html>
