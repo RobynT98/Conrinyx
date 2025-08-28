@@ -1,54 +1,51 @@
-// This is the service worker with the combined offline experience (Offline page + Offline copy of pages)
+// sw.js — Workbox + GitHub Pages–säkert
+const CACHE = "conrinyx-pwa-v1";
 
-const CACHE = "pwabuilder-offline-page";
+// Import Workbox (ok att ladda cross-origin)
+importScripts("https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js");
 
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
+// Bas-sökväg = SW:ns scope ("/Conrinyx/" på GitHub Pages, "/" lokalt)
+const BASE = new URL(self.registration.scope).pathname;
 
-// TODO: replace the following with the correct offline fallback page i.e.: const offlineFallbackPage = "offline.html";
-const offlineFallbackPage = "ToDo-replace-this-name.html";
+// Offline-sida vi ska visa om navigering misslyckas
+const offlineFallbackPage = BASE + "offline.html";
 
+// Snabb uppdatering
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
-self.addEventListener('install', async (event) => {
+// Installera: lägg offline-sidan i cache
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE)
-      .then((cache) => cache.add(offlineFallbackPage))
+    caches.open(CACHE).then((cache) => cache.addAll([offlineFallbackPage]))
   );
+  self.skipWaiting();
 });
 
+// Aktivera navigation preload om möjligt
 if (workbox.navigationPreload.isSupported()) {
   workbox.navigationPreload.enable();
 }
 
+// Cache-strategi för statiska resurser (bilder/js/css)
 workbox.routing.registerRoute(
-  new RegExp('/*'),
-  new workbox.strategies.StaleWhileRevalidate({
-    cacheName: CACHE
-  })
+  ({request}) => ["script", "style", "image", "font"].includes(request.destination),
+  new workbox.strategies.StaleWhileRevalidate({ cacheName: CACHE })
 );
 
-self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith((async () => {
-      try {
-        const preloadResp = await event.preloadResponse;
-
-        if (preloadResp) {
-          return preloadResp;
-        }
-
-        const networkResp = await fetch(event.request);
-        return networkResp;
-      } catch (error) {
-
-        const cache = await caches.open(CACHE);
-        const cachedResp = await cache.match(offlineFallbackPage);
-        return cachedResp;
-      }
-    })());
+// Navigeringar (HTML): Network First med fallback till offline.html
+workbox.routing.registerRoute(
+  ({request}) => request.mode === "navigate",
+  async ({event}) => {
+    try {
+      const preloaded = await event.preloadResponse;
+      if (preloaded) return preloaded;
+      return await fetch(event.request);
+    } catch (err) {
+      const cache = await caches.open(CACHE);
+      const cached = await cache.match(offlineFallbackPage);
+      return cached || Response.error();
+    }
   }
-});
+);
