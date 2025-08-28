@@ -9,7 +9,7 @@ This project is built as a simple PWA with:
 - Icons (`icon-192.png`, `icon-512.png`)  
 
 ## Live Demo
-➡️ [Open the app here](https://robynT98.github.io/Conrinx)
+➡️ [Open the app here](https://robynT98.github.io/Conrinyx)
 
 ## Features
 - Works as an installable app on Android (via Chrome).  
