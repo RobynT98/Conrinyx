@@ -1,51 +1,70 @@
-// sw.js — Workbox + GitHub Pages–säkert
-const CACHE = "conrinyx-pwa-v1";
+// sw.js — enkel, robust offline + cache
+const CACHE_NAME = "conrinyx-cache-v3";
+const OFFLINE_URL = "/offline.html";
 
-// Import Workbox (ok att ladda cross-origin)
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js");
+// Filer att förladda i cachen (lägg till vid behov)
+const PRECACHE = [
+  "/",
+  "/index.html",
+  OFFLINE_URL,
+  "/manifest.json",
+  "/icon-192.png",
+  "/icon-512.png"
+];
 
-// Bas-sökväg = SW:ns scope ("/Conrinyx/" på GitHub Pages, "/" lokalt)
-const BASE = new URL(self.registration.scope).pathname;
-
-// Offline-sida vi ska visa om navigering misslyckas
-const offlineFallbackPage = BASE + "offline.html";
-
-// Snabb uppdatering
-self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
-});
-
-// Installera: lägg offline-sidan i cache
+// ----- INSTALL: förladda viktiga filer -----
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll([offlineFallbackPage]))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
   );
   self.skipWaiting();
 });
 
-// Aktivera navigation preload om möjligt
-if (workbox.navigationPreload.isSupported()) {
-  workbox.navigationPreload.enable();
-}
+// ----- ACTIVATE: rensa gammal cache -----
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((k) => k !== CACHE_NAME && caches.delete(k)))
+    )
+  );
+  self.clients.claim();
+});
 
-// Cache-strategi för statiska resurser (bilder/js/css)
-workbox.routing.registerRoute(
-  ({request}) => ["script", "style", "image", "font"].includes(request.destination),
-  new workbox.strategies.StaleWhileRevalidate({ cacheName: CACHE })
-);
+// ----- FETCH: HTML => network-first + offline-fallback -----
+// Övriga resurser => cache-first (med uppdatering i bakgrunden)
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
 
-// Navigeringar (HTML): Network First med fallback till offline.html
-workbox.routing.registerRoute(
-  ({request}) => request.mode === "navigate",
-  async ({event}) => {
-    try {
-      const preloaded = await event.preloadResponse;
-      if (preloaded) return preloaded;
-      return await fetch(event.request);
-    } catch (err) {
-      const cache = await caches.open(CACHE);
-      const cached = await cache.match(offlineFallbackPage);
-      return cached || Response.error();
-    }
+  // Navigationsförfrågningar (HTML-sidor)
+  if (req.mode === "navigate") {
+    event.respondWith(
+      (async () => {
+        try {
+          // Försök nätet först
+          const fresh = await fetch(req);
+          return fresh;
+        } catch {
+          // Fallback till cache: index eller offline
+          const cache = await caches.open(CACHE_NAME);
+          const cachedIndex = await cache.match("/index.html");
+          return cachedIndex || (await cache.match(OFFLINE_URL));
+        }
+      })()
+    );
+    return;
   }
-);
+
+  // Övriga: cache först, annars nät, sen cacha svaret
+  event.respondWith(
+    caches.match(req).then((cached) => {
+      if (cached) return cached;
+      return fetch(req)
+        .then((resp) => {
+          const respClone = resp.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, respClone));
+          return resp;
+        })
+        .catch(() => caches.match(OFFLINE_URL)); // sista utväg
+    })
+  );
+});
