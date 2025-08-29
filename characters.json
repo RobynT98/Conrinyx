@@ -3,7 +3,7 @@
     "id": "conri",
     "name": "Conri Blackthorn",
     "title": "Ruler of Blackthorn Isle",
-    "avatar": "/images/characters/conri.webp",
+    "avatar": "/Conrinyx/images/characters/conri.webp",
     "tags": ["ruler", "island", "discipline"],
     "summary": "Absolute ruler of Blackthorn Isle — law incarnate.",
     "bio": [
@@ -11,13 +11,13 @@
       "He carries a private burden: order must hold, even when mercy calls."
     ],
     "links": [
-      { "label": "Till scenariot", "href": "/#blackthorn-isle" }
+      { "label": "Till scenariot", "href": "/Conrinyx/#blackthorn-isle" }
     ],
     "gallery": [
-      "/images/characters/conri.webp"
+      "/Conrinyx/images/characters/conri.webp"
     ]
-  }
-]
+  },
+  {
     "id": "nyx",
     "name": "Nyx Rivers",
     "title": "Guardian of Riverside",
