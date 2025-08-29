@@ -11,40 +11,46 @@
   </main>
 
   <script>
-    // Viktigt: rätt path till JSON
-    const DATA_URL = "/Conrinyx/data/characters.json";
+    <script>
+  // Rätt path till JSON (absolut sökväg funkar på GitHub Pages)
+  const DATA_URL = "/Conrinyx/data/characters.json";
 
-    // Bygger rätt länk till show-sidan under /Conrinyx/
-    const toUrl = id => `/Conrinyx/characters/show.html?id=${encodeURIComponent(id)}`;
+  // Bygg länk till detaljsidan
+  const toUrl = id => `/Conrinyx/characters/show.html?id=${encodeURIComponent(id)}`;
 
-    fetch(DATA_URL)
-      .then(r => r.json())
-      .then(items => {
-        const list = document.getElementById('list');
-        list.innerHTML = items.map(x => renderCard(x)).join('');
-      })
-      .catch(err => {
-        console.error(err);
-        document.getElementById('list').innerHTML = "<p>Kunde inte ladda karaktärer.</p>";
-      });
+  fetch(DATA_URL)
+    .then(r => {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })
+    .then(items => {
+      const list = document.getElementById('list');
+      list.innerHTML = items.map(renderCard).join('');
+    })
+    .catch(err => {
+      console.error("Kunde inte ladda karaktärer:", err);
+      document.getElementById('list').innerHTML =
+        "<p>Kunde inte ladda karaktärer.</p>";
+    });
 
-    function renderCard(x){
-      const img = x.avatar ? `<img src="${x.avatar}" alt="">` : '';
-      const tags = (x.tags||[]).slice(0,4).map(t=>`<span class="tag">#${t}</span>`).join('');
-      return `
-        <article class="card" role="listitem">
-          <div class="thumb">${img}</div>
-          <div class="pad">
-            <p class="title">${escapeHTML(x.name)}</p>
-            <p class="sub">${escapeHTML(x.title||'')}</p>
-            <div class="tags">${tags}</div>
-            <a class="btn" href="${toUrl(x.id)}">Visa</a>
-          </div>
-        </article>
-      `;
-    }
+  function renderCard(x) {
+    const img = x.avatar ? `<img src="${x.avatar}" alt="">` : '';
+    const tags = (x.tags||[]).slice(0,4).map(t=>`<span class="tag">#${t}</span>`).join('');
+    return `
+      <article class="card" role="listitem">
+        <div class="thumb">${img}</div>
+        <div class="pad">
+          <p class="title">${escapeHTML(x.name)}</p>
+          <p class="sub">${escapeHTML(x.title||'')}</p>
+          <div class="tags">${tags}</div>
+          <a class="btn" href="${toUrl(x.id)}">Visa</a>
+        </div>
+      </article>`;
+  }
 
-    function escapeHTML(s){return String(s??'').replace(/[<&>"]/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+  function escapeHTML(s){
+    return String(s??'').replace(/[&<>"]/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[m]));
+  )
   </script>
 </body>
 </html>
