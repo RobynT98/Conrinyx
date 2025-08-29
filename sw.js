@@ -1,15 +1,15 @@
 const CACHE_NAME = "conrinyx-cache-v4";
-const OFFLINE_URL = "/Conrinyx/offline.html";
 
 const PRECACHE = [
   "/Conrinyx/",
   "/Conrinyx/index.html",
-  OFFLINE_URL,
-  "/Conrinyx/manifest.json",
+  "/Conrinyx/characters/index.html",
+  "/Conrinyx/characters/show.html",
+  "/Conrinyx/data/characters.json",
   "/Conrinyx/icon-192.png",
-  "/Conrinyx/icon-512.png"
+  "/Conrinyx/icon-512.png",
+  // ev. maskable-ikoner och css
 ];
-
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE))
