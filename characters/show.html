@@ -36,7 +36,7 @@
 <body>
   <header>
     <div class="wrap bar">
-      <a class="back" href="/Conrinyx/characters/">
+      <a class="back" href="/Conrinyx/characters/">← Till lista</a>
       <div class="title">Karaktär</div>
     </div>
   </header>
@@ -74,27 +74,21 @@
   </main>
 
   <footer class="wrap">ConriNyx — FoundFamily</footer>
-
   <script>
-  // Hämta från roten där din characters.json ligger
-  const DATA_URL = "/Conrinyx/characters.json?v=3";
-  const el = id => document.getElementById(id);
-  const params = new URLSearchParams(location.search);
-  const id = params.get("id");
+// RÄTT JSON-path
+const DATA_URL = "/Conrinyx/characters.json";
 
-  const safe = s => String(s ?? "").replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-  const isAbs = u => /^https?:\/\//i.test(u) || u.startsWith("/");
+// rättar relativa länkar i links[]
+const isAbs = (u)=>/^https?:\/\//i.test(u) || u.startsWith("/");
+const makeAbs = (href) => isAbs(href) ? href : `/Conrinyx${href.startsWith("/")? "" : "/"}${href}`;
 
-  async function run(){
-    if(!id){ return showError("Ingen id angiven."); }
-
-    let items;
-    try{
-      const res = await fetch(DATA_URL, {cache:"no-store"});
-      if(!res.ok) throw new Error(res.status);
-      items = await res.json();
-    }catch(e){
-      return showError("Kunde inte läsa data.");
+// ...
+const links = (c.links||[]).map(l=>{
+  const href = l.href ? makeAbs(l.href) : "#";
+  const label = l.label || "Länk";
+  return `<a class="btn" href="${safe(href)}">${safe(label)}</a>`;
+}).join("");
+  
     }
 
     const c = (items||[]).find(x => x.id === id);
