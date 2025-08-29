@@ -22,6 +22,14 @@
     .btn > span{display:inline-block;background:linear-gradient(90deg,var(--gold1),var(--gold2));color:#111;padding:8px 12px;border-radius:10px;font-weight:700}
   </style>
 </head>
+  <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/Conrinx/sw.js", { scope: "/Conrinx/" })
+      .catch(err => console.error("SW fel:", err));
+  });
+}
+  </script>
 <body>
   <main class="wrap">
     <h1>Karaktärer</h1>
