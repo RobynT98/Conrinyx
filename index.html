@@ -406,6 +406,15 @@ const norm = s => (s||"").normalize("NFKD").replace(/[’‘´`]/g,"'").replace(
 // ...
 const key = norm(s.title);
 const data = detailsData[key] || detailsData[s.title];
+  .btn-alt {
+  background-color: #d4a72c;   /* guldig */
+  color: #fff;                 /* vit text */
+  opacity: 0.9;                /* lite mjukare än Skapa scenario */
+  transition: opacity 0.2s;
+}
+.btn-alt:hover {
+  opacity: 1;                  /* blir helt guldig vid hover */
+}
 </style>
 </head>
 <body>
@@ -453,8 +462,8 @@ const data = detailsData[key] || detailsData[s.title];
   </a>
 
   <!-- NY knapp -->
-  <a class="btn btn-ghost"
-     href="/Conrinx/characters/">
+  <a class="btn btn-solid btn-alt"
+     href="/Conrinyx/characters/">
     Karaktärer
   </a>
 </div>
