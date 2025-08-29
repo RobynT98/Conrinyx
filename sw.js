@@ -1,70 +1,45 @@
-// BUMPA version vid varje ändring
-const CACHE_NAME = "conrinyx-cache-v7";
-
-// Offline-sida (du har offline.html i roten)
-const OFFLINE_URL = "/offline.html";
-
-// Filer som finns i ditt repo enligt dina skärmdumpar
+// sw.js
+const CACHE_NAME = "conrinx-cache-v7";   // <- bumpa
 const PRECACHE = [
-  "/",                         // root
-  "/index.html",
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png",
-  "/characters.json",
-  "/characters/",
-  "/characters/index.html",
-  "/characters/show.html",
-  "/images/characters/conri.webp",
-  OFFLINE_URL
+  "/Conrinx/",
+  "/Conrinx/index.html",
+  "/Conrinx/characters/index.html",
+  "/Conrinx/characters/show.html",
+  "/Conrinx/characters.json",     // <- din JSON ligger i roten (stämmer med din repo)
+  "/Conrinx/icon-192.png",
+  "/Conrinx/icon-512.png",
 ];
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
-  );
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(PRECACHE)));
   self.skipWaiting();
 });
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : Promise.resolve()))
-      )
+self.addEventListener("activate", e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : undefined)))
     )
   );
   self.clients.claim();
 });
-
-// Navigationsförfrågningar: network-first, fallback till offline.html
-self.addEventListener("fetch", (event) => {
-  if (event.request.mode === "navigate") {
-    event.respondWith(
+self.addEventListener("fetch", e => {
+  // HTML: nät först, cache fallback
+  if (e.request.mode === "navigate") {
+    e.respondWith(
       (async () => {
-        try {
-          return await fetch(event.request);
-        } catch {
-          const cache = await caches.open(CACHE_NAME);
-          const resp = await cache.match(OFFLINE_URL);
-          return resp || new Response("Offline", { status: 503 });
-        }
+        try { return await fetch(e.request); }
+        catch { return (await caches.open(CACHE_NAME)).match("/Conrinx/index.html"); }
       })()
     );
     return;
   }
-
-  // Övrigt: cache-first, annars hämta och cacha
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((resp) => {
-        // Bara cacha OK-svar
-        if (!resp || resp.status !== 200 || resp.type === "opaque") return resp;
-        const clone = resp.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+  // Övriga filer: cache först, annars hämta + cacha
+  e.respondWith(
+    caches.match(e.request).then(
+      cached => cached || fetch(e.request).then(resp => {
+        const copy = resp.clone();
+        caches.open(CACHE_NAME).then(c => c.put(e.request, copy));
         return resp;
-      });
-    })
+      })
+    )
   );
 });
