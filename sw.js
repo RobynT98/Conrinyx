@@ -1,45 +1,60 @@
-// sw.js
-const CACHE_NAME = "conrinx-cache-v7";   // <- bumpa
+// /Conrinyx/sw.js
+const CACHE_NAME = "conrinyx-cache-v8";
+
 const PRECACHE = [
-  "/Conrinx/",
-  "/Conrinx/index.html",
-  "/Conrinx/characters/index.html",
-  "/Conrinx/characters/show.html",
-  "/Conrinx/characters.json",     // <- din JSON ligger i roten (stämmer med din repo)
-  "/Conrinx/icon-192.png",
-  "/Conrinx/icon-512.png",
+  "/Conrinyx/",
+  "/Conrinyx/index.html",
+  "/Conrinyx/characters/index.html",
+  "/Conrinyx/characters/show.html",
+  "/Conrinyx/characters.json",
+  "/Conrinyx/icon-192.png",
+  "/Conrinyx/icon-512.png",
+  // lägg till fler statiska filer här vid behov (css, maskable-ikoner, m.m.)
 ];
-self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(PRECACHE)));
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
+  );
   self.skipWaiting();
 });
-self.addEventListener("activate", e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : undefined)))
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
     )
   );
   self.clients.claim();
 });
-self.addEventListener("fetch", e => {
-  // HTML: nät först, cache fallback
-  if (e.request.mode === "navigate") {
-    e.respondWith(
+
+// HTML: nät först, fallback till startsidan offline
+self.addEventListener("fetch", (event) => {
+  if (event.request.mode === "navigate") {
+    event.respondWith(
       (async () => {
-        try { return await fetch(e.request); }
-        catch { return (await caches.open(CACHE_NAME)).match("/Conrinx/index.html"); }
+        try {
+          return await fetch(event.request);
+        } catch (_) {
+          const cache = await caches.open(CACHE_NAME);
+          return cache.match("/Conrinyx/index.html");
+        }
       })()
     );
     return;
   }
-  // Övriga filer: cache först, annars hämta + cacha
-  e.respondWith(
-    caches.match(e.request).then(
-      cached => cached || fetch(e.request).then(resp => {
-        const copy = resp.clone();
-        caches.open(CACHE_NAME).then(c => c.put(e.request, copy));
-        return resp;
-      })
+
+  // Övriga resurser: cache-first, annars hämta och cacha
+  event.respondWith(
+    caches.match(event.request).then(
+      (cached) =>
+        cached ||
+        fetch(event.request).then((resp) =>
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, resp.clone());
+            return resp;
+          })
+        )
     )
   );
 });
