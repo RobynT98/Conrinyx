@@ -6,12 +6,10 @@
   <meta name="theme-color" content="#0b0b12" />
   <title>Karaktär – ConriNyx</title>
   <style>
-    :root{
-      --bg:#0b0b12; --panel:#151922; --muted:#9fb0c3; --txt:#e6eef7; --brand:#d4a72c; --chip:#242a36;
-    }
-    html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, Arial}
+    :root{--bg:#0b0b12;--panel:#151922;--muted:#9fb0c3;--txt:#e6eef7;--brand:#d4a72c;--chip:#242a36}
+    html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial}
     a{color:var(--brand);text-decoration:none}
-    header{position:sticky;top:0;background:rgba(11,11,18,.8);backdrop-filter: blur(6px);border-bottom:1px solid #232838}
+    header{position:sticky;top:0;background:rgba(11,11,18,.8);backdrop-filter:blur(6px);border-bottom:1px solid #232838}
     .wrap{max-width:960px;margin:0 auto;padding:16px}
     .bar{display:flex;gap:12px;align-items:center;justify-content:space-between}
     .back{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;background:var(--panel);border:1px solid #232838;border-radius:10px}
@@ -32,15 +30,13 @@
     .grid img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:10px;border:1px solid #232838;background:#0a0d12}
     .empty{color:var(--muted)}
     footer{margin:28px 0 10px;text-align:center;color:var(--muted);font-size:13px}
-    @media (max-width:560px){ .top{grid-template-columns:1fr} .avatar{width:100%;height:220px;border-radius:12px} }
+    @media (max-width:560px){.top{grid-template-columns:1fr}.avatar{width:100%;height:220px;border-radius:12px}}
   </style>
 </head>
 <body>
   <header>
     <div class="wrap bar">
-      <a class="back" href="/Conrinx/characters/">
-        ← Till lista
-      </a>
+      <a class="back" href="/characters/">← Till lista</a>
       <div class="title">Karaktär</div>
     </div>
   </header>
@@ -80,14 +76,15 @@
   <footer class="wrap">ConriNyx — FoundFamily</footer>
 
   <script>
-  const DATA_URL = "/Conrinx/data/characters.json"; // absolut så det funkar från alla mappar
+  // Hämta från roten där din characters.json ligger
+  const DATA_URL = "/characters.json";
 
-  const el = (id)=>document.getElementById(id);
+  const el = id => document.getElementById(id);
   const params = new URLSearchParams(location.search);
   const id = params.get("id");
 
-  const safe = (s)=>String(s??"").replace(/[&<>"]/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[m]));
-  const isAbs = (u)=>/^https?:\/\//i.test(u) || u.startsWith("/");
+  const safe = s => String(s ?? "").replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  const isAbs = u => /^https?:\/\//i.test(u) || u.startsWith("/");
 
   async function run(){
     if(!id){ return showError("Ingen id angiven."); }
@@ -101,53 +98,42 @@
       return showError("Kunde inte läsa data.");
     }
 
-    const c = (items||[]).find(x=>x.id===id);
+    const c = (items||[]).find(x => x.id === id);
     if(!c){ return showError("Hittade inte karaktären."); }
 
-    // Sätt titel
     document.title = `${c.name} — ConriNyx`;
 
     // Avatar
     const avatarSrc = c.avatar || (c.gallery && c.gallery[0]) || "";
-    if(avatarSrc){
-      el("avatar").src = avatarSrc;
-      el("avatar").alt = c.name || "avatar";
-    }
+    if(avatarSrc){ el("avatar").src = avatarSrc; el("avatar").alt = c.name || "avatar"; }
 
-    // Namn + titel
+    // Namn, titel, taggar
     el("name").textContent  = c.name || "—";
     el("title").textContent = c.title || "";
-
-    // Taggar
     el("tags").innerHTML = (c.tags||[]).map(t=>`<span class="tag">#${safe(t)}</span>`).join("");
 
-    // Bio (array av stycken)
+    // Bio
     el("bio").innerHTML = (c.bio||[]).map(p=>`<p>${safe(p)}</p>`).join("") || `<div class="empty">Ingen beskrivning.</div>`;
 
     // Länkar
     const links = (c.links||[]).map(l=>{
-      const href = l.href ? (isAbs(l.href) ? l.href : "/Conrinx"+(l.href.startsWith("/")? "":"/")+l.href) : "#";
-      const label = l.label || "Länk";
+      const href = l?.href ? (isAbs(l.href) ? l.href : `/${l.href.replace(/^\/+/,'')}`) : "#";
+      const label = l?.label || "Länk";
       return `<a class="btn" href="${safe(href)}">${safe(label)}</a>`;
     }).join("");
     el("links").innerHTML = links || `<div class="empty">Inga länkar.</div>`;
 
     // Galleri
-    const gallery = (c.gallery&&c.gallery.length? c.gallery : (avatarSrc?[avatarSrc]:[]))
+    const gallery = (c.gallery && c.gallery.length ? c.gallery : (avatarSrc?[avatarSrc]:[]))
       .map(src=>`<img loading="lazy" src="${safe(src)}" alt="">`).join("");
     el("gallery").innerHTML = gallery || `<div class="empty">Inga bilder.</div>`;
 
-    // Visa kortet
     el("card").hidden = false;
     el("msg").remove();
   }
 
   function showError(txt){
-    el("msg").textContent = txt + " ";
-    const a = document.createElement("a");
-    a.href="/Conrinx/characters/";
-    a.textContent="Tillbaka";
-    el("msg").appendChild(a);
+    el("msg").innerHTML = `${safe(txt)} <a href="/characters/">Tillbaka</a>`;
   }
 
   run();
