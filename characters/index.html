@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Karaktärer – Conrinyx</title>
+  <link rel="manifest" href="/Conrinyx/manifest.json">
   <style>
     :root{--gold1:#e4b647;--gold2:#c79b2a}
     body{margin:0;background:#0e0f12;color:#e7e7ea;font-family:system-ui,Segoe UI,Roboto,Inter,Arial}
@@ -21,15 +22,16 @@
     .btn{display:inline-block;text-decoration:none}
     .btn > span{display:inline-block;background:linear-gradient(90deg,var(--gold1),var(--gold2));color:#111;padding:8px 12px;border-radius:10px;font-weight:700}
   </style>
-</head>
+
   <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/Conrinyx/sw.js", { scope: "/Conrinyx/" })
-      .catch(err => console.error("SW fel:", err));
-  });
-}
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/Conrinyx/sw.js", { scope: "/Conrinyx/" })
+        .catch(err => console.error("SW fel:", err));
+    });
+  }
   </script>
+</head>
 <body>
   <main class="wrap">
     <h1>Karaktärer</h1>
@@ -37,57 +39,58 @@ if ("serviceWorker" in navigator) {
   </main>
 
   <script>
-    const DATA_URL = "/Conrinyx/characters.json";       // <— ABSOLUT rätt
-const toUrl = id => `/Conrinyx/characters/show.html?id=${encodeURIComponent(id)}`;
+  const DATA_URL = "/Conrinyx/characters.json";
+  const toUrl = id => `/Conrinyx/characters/show.html?id=${encodeURIComponent(id)}`;
 
-function normalizeSrc(p) {
-  if (!p) return "";
-  if (/^https?:\/\//i.test(p) || p.startsWith("/")) return p;
-  return `/Conrinyx/images/characters/${p}`;
-}
-    // HTML-escape
-    function escapeHTML(s) {
-      return String(s ?? "")
-        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
-        .replace(/'/g,"&#39;");
-    }
+  function normalizeSrc(p) {
+    if (!p) return "";
+    if (/^https?:\/\//i.test(p) || p.startsWith("/")) return p;
+    return `/Conrinyx/images/characters/${p}`;
+  }
 
-    // Rendera kort
-    function renderCard(x) {
-      const src = normalizeSrc(x.avatar) || `/images/characters/${x.id || "placeholder"}.webp`;
-      const img = src ? `<img src="${src}" alt="${escapeHTML(x.name || "")}">` : "";
-      const tags = (x.tags || []).slice(0,4)
-        .map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("");
+  function escapeHTML(s) {
+    return String(s ?? "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
 
-      return `
-        <article class="card" role="listitem">
-          <div class="thumb">${img}</div>
-          <div class="pad">
-            <p class="title">${escapeHTML(x.name || "")}</p>
-            <p class="sub">${escapeHTML(x.title || "")}</p>
-            <div class="tags">${tags}</div>
-            <a class="btn" href="${toUrl(x.id)}"><span>Visa</span></a>
-          </div>
-        </article>
-      `;
-    }
+  function renderCard(x) {
+    const src = normalizeSrc(x.avatar) || `/Conrinyx/images/characters/${x.id || "placeholder"}.webp`;
+    const img = src ? `<img src="${src}" alt="${escapeHTML(x.name || "")}">` : "";
+    const tags = (x.tags || []).slice(0,4).map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("");
 
-    // Hämta & rendera
-    (function init() {
-      const list = document.getElementById("list");
-      list.innerHTML = "<p>Laddar…</p>";
+    return `
+      <article class="card" role="listitem">
+        <div class="thumb">${img}</div>
+        <div class="pad">
+          <p class="title">${escapeHTML(x.name || "")}</p>
+          <p class="sub">${escapeHTML(x.title || "")}</p>
+          <div class="tags">${tags}</div>
+          <a class="btn" href="${toUrl(x.id)}"><span>Visa</span></a>
+        </div>
+      </article>
+    `;
+  }
 
-      fetch(DATA_URL, { cache: "no-store" })
-  .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-  .then(items => {
-    list.innerHTML = items.map(renderCard).join("");
-  })
-  .catch(err => {
-    console.error("Kunde inte ladda karaktärer:", err);
-    list.innerHTML = "<p>Kunde inte ladda karaktärer.</p>";
-  });
-    })();
+  (function init() {
+    const list = document.getElementById("list");
+    list.innerHTML = "<p>Laddar…</p>";
+
+    fetch(DATA_URL, { cache: "no-store" })
+      .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(items => {
+        if (!Array.isArray(items) || items.length === 0) {
+          list.innerHTML = "<p>Inga karaktärer hittades.</p>";
+          return;
+        }
+        list.innerHTML = items.map(renderCard).join("");
+      })
+      .catch(err => {
+        console.error("Kunde inte ladda karaktärer:", err);
+        list.innerHTML = "<p>Kunde inte ladda karaktärer.</p>";
+      });
+  })();
   </script>
 </body>
 </html>
