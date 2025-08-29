@@ -4,12 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
-  <link rel="manifest" href="/Conrinyx/manifest.json">
-<meta name="theme-color" content="#d4a72c">
+  q<!-- I <head> -->
+<link rel="manifest" href="/Conrinyx/manifest.json">
+
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js")
+    navigator.serviceWorker.register("/Conrinyx/sw.js", { scope: "/Conrinyx/" })
       .then(reg => console.log("SW ok:", reg.scope))
       .catch(err => console.error("SW fel:", err));
   });
