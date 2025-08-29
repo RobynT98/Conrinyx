@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Karaktärer – Conrinyx</title>
   <style>
+    :root{--gold1:#e4b647;--gold2:#c79b2a}
     body{margin:0;background:#0e0f12;color:#e7e7ea;font-family:system-ui,Segoe UI,Roboto,Inter,Arial}
     .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
     h1{font-size:28px;margin:0 0 16px}
@@ -18,82 +19,79 @@
     .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
     .tag{font-size:12px;border:1px solid #3a3d47;border-radius:999px;padding:4px 8px;opacity:.9}
     .btn{display:inline-block;text-decoration:none}
-    .btn > span{display:inline-block;background:linear-gradient(90deg,#e4b647,#c79b2a);
-      color:#111;padding:8px 12px;border-radius:10px;font-weight:700}
+    .btn > span{display:inline-block;background:linear-gradient(90deg,var(--gold1),var(--gold2));color:#111;padding:8px 12px;border-radius:10px;font-weight:700}
   </style>
 </head>
 <body>
-  <link rel="stylesheet" href="/index.css">
   <main class="wrap">
     <h1>Karaktärer</h1>
     <div id="list" class="grid" role="list"></div>
   </main>
+
   <script>
-  // Var ligger din data?
-  const DATA_URL = "/characters.json";
+    // Var ligger din data? (i roten)
+    const DATA_URL = "/characters.json";
 
-  // Bygger rätt länk till detaljsidan
-  const toUrl = id => `/characters/show.html?id=${encodeURIComponent(id)}`;
+    // Länk till detaljsidan (ligger i samma /characters/-mapp)
+    const toUrl = id => `/characters/show.html?id=${encodeURIComponent(id)}`;
 
-  // Liten hjälp för att normalisera bildsökvägar
-  function normalizeSrc(p) {
-    if (!p) return "";
-    if (p.startsWith("http") || p.startsWith("/")) return p;
-    // Om det är ett filnamn, lägg det under /images/characters/
-    return `/images/characters/${p}`;
-  }
-  // Enklare HTML-escape
-  function escapeHTML(s) {
-    return String(s ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
+    // Normalisera bildsökvägar
+    function normalizeSrc(p) {
+      if (!p) return "";
+      if (p.startsWith("http") || p.startsWith("/")) return p;
+      return `/images/characters/${p}`;
+    }
 
-  // Bygger ett kort för en karaktär
-  function renderCard(x) {
-    const src = normalizeSrc(x.avatar) || `/images/characters/${x.id || "placeholder"}.webp`;
-    const img = src ? `<img src="${src}" alt="${escapeHTML(x.name || "")}">` : "";
-    const tags = (x.tags || []).slice(0,4).map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("");
+    // HTML-escape
+    function escapeHTML(s) {
+      return String(s ?? "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+        .replace(/'/g,"&#39;");
+    }
 
-    return `
-      <article class="card" role="listitem">
-        <div class="thumb">${img}</div>
-        <div class="pad">
-          <p class="title">${escapeHTML(x.name || "")}</p>
-          <p class="sub">${escapeHTML(x.title || "")}</p>
-          <div class="tags">${tags}</div>
-          <a class="btn" href="${toUrl(x.id)}">Visa</a>
-        </div>
-      </article>
-    `;
-  }
+    // Rendera kort
+    function renderCard(x) {
+      const src = normalizeSrc(x.avatar) || `/images/characters/${x.id || "placeholder"}.webp`;
+      const img = src ? `<img src="${src}" alt="${escapeHTML(x.name || "")}">` : "";
+      const tags = (x.tags || []).slice(0,4)
+        .map(t => `<span class="tag">#${escapeHTML(t)}</span>`).join("");
 
-  // Hämta & rendera
-  (function init() {
-    const list = document.getElementById("list");
-    list.innerHTML = "<p>Laddar…</p>";
+      return `
+        <article class="card" role="listitem">
+          <div class="thumb">${img}</div>
+          <div class="pad">
+            <p class="title">${escapeHTML(x.name || "")}</p>
+            <p class="sub">${escapeHTML(x.title || "")}</p>
+            <div class="tags">${tags}</div>
+            <a class="btn" href="${toUrl(x.id)}"><span>Visa</span></a>
+          </div>
+        </article>
+      `;
+    }
 
-    fetch(DATA_URL, { cache: "no-store" })
-      .then(r => {
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        return r.json();
-      })
-      .then(items => {
-        if (!Array.isArray(items) || items.length === 0) {
-          list.innerHTML = "<p>Inga karaktärer hittades.</p>";
-          return;
-        }
-        list.innerHTML = items.map(renderCard).join("");
-      })
-      .catch(err => {
-        console.error("Kunde inte ladda karaktärer:", err);
-        list.innerHTML = "<p>Kunde inte ladda karaktärer.</p>";
-      });
-  })();
-</script>
-  
+    // Hämta & rendera
+    (function init() {
+      const list = document.getElementById("list");
+      list.innerHTML = "<p>Laddar…</p>";
+
+      fetch(DATA_URL, { cache: "no-store" })
+        .then(r => {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(items => {
+          if (!Array.isArray(items) || items.length === 0) {
+            list.innerHTML = "<p>Inga karaktärer hittades.</p>";
+            return;
+          }
+          list.innerHTML = items.map(renderCard).join("");
+        })
+        .catch(err => {
+          console.error("Kunde inte ladda karaktärer:", err);
+          list.innerHTML = "<p>Kunde inte ladda karaktärer.</p>";
+        });
+    })();
+  </script>
 </body>
 </html>
