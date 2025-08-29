@@ -74,31 +74,50 @@
   </main>
 
   <footer class="wrap">ConriNyx — FoundFamily</footer>
+
   <script>
-// RÄTT JSON-path
-const DATA_URL = "/Conrinyx/characters.json";
+  // ---- Hjälpare ----
+  const el   = (id)=>document.getElementById(id);
+  const safe = (s)=>String(s ?? "")
+                     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+                     .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+                     .replace(/'/g,"&#39;");
+  const isAbs  = (u)=>/^https?:\/\//i.test(u) || u.startsWith("/");
+  const makeAbs = (href)=> isAbs(href) ? href : `/Conrinyx${href.startsWith("/")?"":"/"}${href}`;
 
-// rättar relativa länkar i links[]
-const isAbs = (u)=>/^https?:\/\//i.test(u) || u.startsWith("/");
-const makeAbs = (href) => isAbs(href) ? href : `/Conrinyx${href.startsWith("/")? "" : "/"}${href}`;
+  // ---- Data-källa ----
+  const DATA_URL = "/Conrinyx/characters.json";
 
-// ...
-const links = (c.links||[]).map(l=>{
-  const href = l.href ? makeAbs(l.href) : "#";
-  const label = l.label || "Länk";
-  return `<a class="btn" href="${safe(href)}">${safe(label)}</a>`;
-}).join("");
-  
+  // ---- Läs id från query ----
+  const params = new URLSearchParams(location.search);
+  const id = params.get("id");
+
+  async function run(){
+    if(!id){ return showError("Ingen id angiven."); }
+
+    // Hämta JSON
+    let items;
+    try{
+      const res = await fetch(DATA_URL, { cache:"no-store" });
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      items = await res.json();
+    }catch(e){
+      console.error(e);
+      return showError("Kunde inte läsa data.");
     }
 
     const c = (items||[]).find(x => x.id === id);
     if(!c){ return showError("Hittade inte karaktären."); }
 
+    // Sätt sidtitel
     document.title = `${c.name} — ConriNyx`;
 
     // Avatar
     const avatarSrc = c.avatar || (c.gallery && c.gallery[0]) || "";
-    if(avatarSrc){ el("avatar").src = avatarSrc; el("avatar").alt = c.name || "avatar"; }
+    if(avatarSrc){
+      el("avatar").src = avatarSrc;
+      el("avatar").alt = c.name || "avatar";
+    }
 
     // Namn, titel, taggar
     el("name").textContent  = c.name || "—";
@@ -108,25 +127,25 @@ const links = (c.links||[]).map(l=>{
     // Bio
     el("bio").innerHTML = (c.bio||[]).map(p=>`<p>${safe(p)}</p>`).join("") || `<div class="empty">Ingen beskrivning.</div>`;
 
-    // Länkar
-    const links = (c.links||[]).map(l=>{
-      const href = l?.href ? (isAbs(l.href) ? l.href : `/${l.href.replace(/^\/+/,'')}`) : "#";
+    // Länkar (fixa interna till /Conrinyx/…)
+    const linksHtml = (c.links||[]).map(l=>{
+      const href  = l?.href ? makeAbs(l.href) : "#";
       const label = l?.label || "Länk";
       return `<a class="btn" href="${safe(href)}">${safe(label)}</a>`;
     }).join("");
-    el("links").innerHTML = links || `<div class="empty">Inga länkar.</div>`;
+    el("links").innerHTML = linksHtml || `<div class="empty">Inga länkar.</div>`;
 
     // Galleri
-    const gallery = (c.gallery && c.gallery.length ? c.gallery : (avatarSrc?[avatarSrc]:[]))
-      .map(src=>`<img loading="lazy" src="${safe(src)}" alt="">`).join("");
-    el("gallery").innerHTML = gallery || `<div class="empty">Inga bilder.</div>`;
+    const imgs = c.gallery && c.gallery.length ? c.gallery : (avatarSrc ? [avatarSrc] : []);
+    el("gallery").innerHTML = imgs.map(src=>`<img loading="lazy" src="${safe(src)}" alt="">`).join("") || `<div class="empty">Inga bilder.</div>`;
 
+    // Visa kortet
     el("card").hidden = false;
     el("msg").remove();
   }
 
   function showError(txt){
-    el("msg").innerHTML = `${safe(txt)} <a href="/characters/">Tillbaka</a>`;
+    el("msg").innerHTML = `${safe(txt)} <a href="/Conrinyx/characters/">Tillbaka</a>`;
   }
 
   run();
