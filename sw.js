@@ -1,13 +1,15 @@
-// sw.js  (ERSÄTT HELA ELLER ÄNDRA TILL MINS DETTA)
-const CACHE_NAME = "conrinyx-cache-v8";  // <- bumpa v-numret
+const CACHE_NAME = "conrinyx-cache-v7";
+const OFFLINE_URL = "/Conrinyx/offline.html";
+
 const PRECACHE = [
   "/Conrinyx/",
   "/Conrinyx/index.html",
+  "/Conrinyx/offline.html",
   "/Conrinyx/characters/index.html",
   "/Conrinyx/characters/show.html",
   "/Conrinyx/characters.json",
   "/Conrinyx/icon-192.png",
-  "/Conrinyx/icon-512.png",
+  "/Conrinyx/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -17,47 +19,33 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null)))
-    )
+    caches.keys().then(keys => Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null))))
   );
   self.clients.claim();
 });
 
-// HTML/JSON: nätet först (så nya data slår igenom); annars cache
 self.addEventListener("fetch", (event) => {
-  const req = event.request;
-  const isDoc = req.mode === "navigate" || req.destination === "document";
-  const isJson = req.url.endsWith(".json");
-
-  if (isDoc || isJson) {
-    event.respondWith(
-      (async () => {
-        try {
-          const fresh = await fetch(req, { cache: "no-store" });
-          // uppdatera cache i bakgrunden
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(req, fresh.clone());
-          return fresh;
-        } catch {
-          const cached = await caches.match(req);
-          return cached || caches.match("/Conrinyx/index.html");
-        }
-      })()
-    );
+  // Navigations: nät först, fallback offline
+  if (event.request.mode === "navigate") {
+    event.respondWith((async () => {
+      try {
+        return await fetch(event.request);
+      } catch {
+        const cache = await caches.open(CACHE_NAME);
+        const cached = await cache.match(OFFLINE_URL);
+        return cached || new Response("Offline", { status: 503, headers: { "Content-Type": "text/plain" }});
+      }
+    })());
     return;
   }
 
-  // Övrigt: cache först, annars hämta och cacha
+  // Övrigt: cache först, annars hämta + cacha
   event.respondWith(
-    caches.match(req).then(cached =>
+    caches.match(event.request).then(cached =>
       cached ||
-      fetch(req).then(resp => {
-        return caches.open(CACHE_NAME).then(c => {
-          c.put(req, resp.clone());
-          return resp;
-        });
-      })
+      fetch(event.request).then(resp =>
+        caches.open(CACHE_NAME).then(cache => { cache.put(event.request, resp.clone()); return resp; })
+      )
     )
   );
 });
