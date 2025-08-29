@@ -33,9 +33,8 @@
     const DATA_URL = "/characters.json";
 
     // Länk till detaljsidan (ligger i samma /characters/-mapp)
-    const toUrl = id => `/characters/show.html?id=${encodeURIComponent(id)}`;
-
-    // Normalisera bildsökvägar
+const toUrl = id => `/characters/show.html?id=characters/show.html?id=${encodeURIComponent(id)}`;   
+// Normalisera bildsökvägar//
     function normalizeSrc(p) {
       if (!p) return "";
       if (p.startsWith("http") || p.startsWith("/")) return p;
