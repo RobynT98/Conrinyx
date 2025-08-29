@@ -41,7 +41,7 @@ if ("serviceWorker" in navigator) {
     const DATA_URL = "/Conrinyx/characters.json?v=3";  // bumpa siffran vid behov
     // Länk till detaljsidan (ligger i samma /characters/-mapp)
 const toUrl = id => `/Conrinyx/characters/show.html?id=${encodeURIComponent(id)}`;
-// Normalisera bildsökvägar//
+    // Normalisera bildsökvägar//
     function normalizeSrc(p) {
       if (!p) return "";
       if (p.startsWith("http") || p.startsWith("/")) return p;
