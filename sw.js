@@ -1,4 +1,4 @@
-const CACHE_NAME = "conrinyx-cache-v4";
+const CACHE_NAME = "conrinyx-cache-v5";
 
 const PRECACHE = [
   "/Conrinyx/",
