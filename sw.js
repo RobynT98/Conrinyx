@@ -1,6 +1,5 @@
-// /Conrinyx/sw.js
-const CACHE_NAME = "conrinyx-cache-v8";
-
+// sw.js  (ERSÄTT HELA ELLER ÄNDRA TILL MINS DETTA)
+const CACHE_NAME = "conrinyx-cache-v8";  // <- bumpa v-numret
 const PRECACHE = [
   "/Conrinyx/",
   "/Conrinyx/index.html",
@@ -9,52 +8,56 @@ const PRECACHE = [
   "/Conrinyx/characters.json",
   "/Conrinyx/icon-192.png",
   "/Conrinyx/icon-512.png",
-  // lägg till fler statiska filer här vid behov (css, maskable-ikoner, m.m.)
 ];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+    caches.keys().then(keys =>
+      Promise.all(keys.map(k => (k !== CACHE_NAME ? caches.delete(k) : null)))
     )
   );
   self.clients.claim();
 });
 
-// HTML: nät först, fallback till startsidan offline
+// HTML/JSON: nätet först (så nya data slår igenom); annars cache
 self.addEventListener("fetch", (event) => {
-  if (event.request.mode === "navigate") {
+  const req = event.request;
+  const isDoc = req.mode === "navigate" || req.destination === "document";
+  const isJson = req.url.endsWith(".json");
+
+  if (isDoc || isJson) {
     event.respondWith(
       (async () => {
         try {
-          return await fetch(event.request);
-        } catch (_) {
+          const fresh = await fetch(req, { cache: "no-store" });
+          // uppdatera cache i bakgrunden
           const cache = await caches.open(CACHE_NAME);
-          return cache.match("/Conrinyx/index.html");
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          const cached = await caches.match(req);
+          return cached || caches.match("/Conrinyx/index.html");
         }
       })()
     );
     return;
   }
 
-  // Övriga resurser: cache-first, annars hämta och cacha
+  // Övrigt: cache först, annars hämta och cacha
   event.respondWith(
-    caches.match(event.request).then(
-      (cached) =>
-        cached ||
-        fetch(event.request).then((resp) =>
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, resp.clone());
-            return resp;
-          })
-        )
+    caches.match(req).then(cached =>
+      cached ||
+      fetch(req).then(resp => {
+        return caches.open(CACHE_NAME).then(c => {
+          c.put(req, resp.clone());
+          return resp;
+        });
+      })
     )
   );
 });
